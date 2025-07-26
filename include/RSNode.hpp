@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <tf2/LinearMath/Quaternion.h>

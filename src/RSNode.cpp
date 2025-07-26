@@ -14,6 +14,8 @@ RSNode::RSNode() : Node("rs_node")
 
 void RSNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
 {
+    assert(typeid(*msg) == typeid(sensor_msgs::msg::Imu));
+    assert(msg->header.frame_id == "camera_imu_optical_frame");
     computeEulerFromQuaternion(msg, _current_pose_);
 }
 
