@@ -32,7 +32,7 @@ All CAD and software is contained within this repo.
 - Worst case surface: Concrete (Rolling resistance ~0.03)
 - Torque safety factor: 2
 
-### Selecting Motor Parameters:
+## Selecting Motor Parameters:
 #### Required torque:
 
 ```math
