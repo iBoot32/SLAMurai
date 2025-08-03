@@ -33,8 +33,7 @@ All CAD and software is contained within this repo.
 - Torque safety factor: 2
 
 ### Selecting Motor Parameters:
-
-**Forces due to rolling resistance and desired acceleration:**
+#### Required torque:
 
 ```math
 \text{F}_{\text{roll}} = \mu \cdot \text{F}_{\text{normal}} = 0.03 \cdot 4.5 \text{kg} \cdot 9.81 \text{m/s}^2 = 1.32 \text{N}
@@ -49,7 +48,6 @@ All CAD and software is contained within this repo.
 ```
 
 ```math
-\text{Required torque and RPM:} \\\\
 \tau = \text{F}_{\text{total}} \cdot \text{r}_{\text{wheel}} = 2.67 \text{N} \cdot 0.05 \text{m} = \boxed{0.134 \text{Nm}}
 ```
 
@@ -77,7 +75,7 @@ T = \frac{\tau}{2} = \frac{0.134 \text{Nm}}{2} = \boxed{0.067 \text{Nm}} \cdot 2
 0.134 \text{Nm} \cdot \frac{10.197 \text{kg*cm}}{1 \text{Nm}} \approx \boxed{1.37 \text{kg*cm}}
 ```
 
-Then for required RPM:
+#### Then for required RPM:
 
 ```math
 \text{RPM} = \frac{\text{Target velocity} \cdot 60}{2 \pi r} = \frac{0.75 \text{m/s} \cdot 60}{2 \pi \cdot 0.05 \text{m}} \approx \boxed{143.24 \text{RPM}}
