@@ -16,7 +16,7 @@ All CAD and software is contained within this repo.
 ### Payload:
 - 4x motors: 0.25kg each = 1.0kg total
 - 4x 100mm omni wheels: 0.3kg each = 1.2kg total
-- 1x 6000mAh battery: 0.55kg
+- 1x 6000mAhlipo battery: 0.55kg
 - 1x NVIDIA TX2: 0.5kg
 - 1x Intel RealSense D455: 0.3kg
 - 3x chassis plates: 0.3kg total
@@ -153,7 +153,46 @@ Desired specs:
 - Voltage: 12V (compatible with motors and TX2, so avoids needing a buck converter)
 - Runtime: 1 hour (at 0.75 m/s and 0.3 m/s² acceleration with 4.5kg payload)
 
-TODO!
+Let's find when the robot will use the most torque:
+
+```math
+\max_{\theta \in [0^\circ, 90^\circ]} \left( \tau \left(\theta\right) \right) = \max_{\theta \in [0^\circ, 90^\circ]} \left(2 T \cos(\theta) + 2 T \cos(90^\circ - \theta)\right) = 2 T \sqrt{2}
+```
+
+This happens when $\theta = 45^\circ$. So the torque used per motor at this angle is:
+
+```math
+T = \frac{\tau}{2 \sqrt{2}} = \frac{1.37 \text{kg*cm}}{2 \sqrt{2}} \approx 0.484 \text{kg*cm}
+```
+And the current draw at this torque is:
+
+```math
+I = I_{\text{no-load}} + (\frac{I_\text{stall} - I_\text{no-load}}{T_\text{stall}}) T
+```
+
+```math
+I = 0.2 \text{A} + \left(\frac{5.5 \text{A} - 0.2 \text{A}}{23 \text{kg*cm}}\right) \cdot 0.484 \text{kg*cm} \approx 0.2 + 0.1 \approx 0.3 \text{A}
+```
+
+```math
+\text{Total current draw} = 4 \cdot 0.3 \text{A} = 1.2 \text{A}
+```
+
+
+The TX2 draws about 15W at 12V, or 1.25A. The RealSense D455 runs at 5V and probably 3.5W max, which is 0.7A. Finally, the RPLIDAR A1M8 draws around 100mA. So our total continuous current draw is:
+
+```math
+I_{\text{total}} = 1.2 \text{A} + 1.25 \text{A} + 0.7 \text{A} + 0.1 \text{A} = 3.25 \text{A}
+```
+
+To run for 1 hour, we need a battery with at least:
+
+```math
+\text{Capacity} = I_{\text{total}} \cdot \text{Time} = 3.25 \text{A} \cdot 1 \text{h} = 3.25 \text{Ah} = 3250 \text{mAh}
+```
+
+Our 6000mAh battery is more than sufficient, and leaves a good safety margin.
+
 
 ## License
 
