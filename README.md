@@ -179,7 +179,7 @@ I = 0.2 \text{A} + \left(\frac{5.5 \text{A} - 0.2 \text{A}}{23 \text{kg*cm}}\rig
 ```
 
 
-The TX2 draws about 15W at 12V, or 1.25A. The RealSense D455 runs at 5V and probably 3.5W max, which is 0.7A. Finally, the RPLIDAR A1M8 draws around 100mA. So our total continuous current draw is:
+The TX2 draws about 15W at 12V, or 1.25A. The RealSense D455 runs at 5V and probably 3.5W max, which is 0.7A. Finally, the RPLIDAR A1M8 draws around 100mA. So our overly-conservative total continuous current draw is:
 
 ```math
 I_{\text{total}} = 1.2 \text{A} + 1.25 \text{A} + 0.7 \text{A} + 0.1 \text{A} = 3.25 \text{A}
