@@ -2,30 +2,37 @@
 #include <math.h>
 
 #define ENABLE_PIN 8
-#define DISABLE_ALL_STEPPERS 1
+#define DISABLE_ALL_STEPPERS 0
 
-// Wheel and movement params
-#define STEPS_PER_REV 800      // 1/4 microstep => 800 steps/rev
+// Robot params
 #define WHEEL_RADIUS_M 0.05    // 100 mm diameter
+#define ROBOT_CENTER_TO_WHEEL_RADIUS 0.145
+
+// Speed params
+#define STEPS_PER_REV 800      // 1/4 microstep => 800 steps/rev
 #define RPM_MAX 65
 #define STEPS_PER_SEC_MAX ((RPM_MAX)/60.0f * (STEPS_PER_REV))
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
-
-// Serial R/W
-#define ODOM_DT 40   // 25 Hz
+#define ODOM_DT (1000.0 / 20) // 25 Hz
 uint32_t last_odom_ms = 0;
 
-// Non-blocking read serial
-static char rxbuf[32];
-static uint8_t rxlen = 0;
-bool read_line_float(float* out_val) {
+// Parse cmd_vel serial string into [x, y, w]
+bool read_line_float(float* out) {
+  static char rxbuf[64];
+  static uint8_t rxlen = 0;
+
   while (Serial.available()) {
     char c = (char)Serial.read();
-    if (c == '\r') continue;
-    if (c == '\n') {
+    if (c == '\n' || c == '\r') {
+      if (rxlen == 0) continue;
       rxbuf[rxlen] = '\0';
       rxlen = 0;
-      *out_val = atof(rxbuf);
+
+      char *p = rxbuf;
+      for (int i = 0; i < 3; i++) {
+        out[i] = (float)strtod(p, &p); // parse and move pointer
+        if (*p == ',') p++;            // skip comma
+      }
       return true;
     }
     if (rxlen + 1 < sizeof(rxbuf)) rxbuf[rxlen++] = c;
@@ -33,7 +40,6 @@ bool read_line_float(float* out_val) {
   return false;
 }
 
-// Stepper class, encapsulates stepper setup, velocity setting, and running
 struct Stepper {
   uint8_t stepPin, dirPin;
   AccelStepper drv;
@@ -88,21 +94,39 @@ void loop() {
   stepperZ.service();
   stepperA.service();
 
-  // cmd_vel read over serial to set motor speeds
-  float cmd_v;
-  if (read_line_float(&cmd_v)) {
-    stepperX.setLinearVelocity(cmd_v);
-    stepperY.setLinearVelocity(cmd_v);
-    stepperZ.setLinearVelocity(cmd_v);
-    stepperA.setLinearVelocity(cmd_v);
+  // Inverse kinematic to obtain wheel linear velocities:  ωi = (sin((i − 1)·θ + γ)·vbx − cos((i − 1)·θ + γ)·vby − R·ωbz)
+  // We pre-compute sin/cos terms using θ=pi/2, γ=0, i=[1,4]
+  float cmd_v[3];
+  if (read_line_float(cmd_v)) {
+    float vx = cmd_v[0];
+    float vy = cmd_v[1];
+    float w  = cmd_v[2];
+  
+    float vX = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vY =  (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vZ =  (vy - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vA = -(vx + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+  
+    stepperX.setLinearVelocity(vX);
+    stepperY.setLinearVelocity(vY);
+    stepperZ.setLinearVelocity(vZ);
+    stepperA.setLinearVelocity(vA);
   }
 
-  // Odom writing over serial
+  // Send odom
   uint32_t now = millis();
   if (now - last_odom_ms >= ODOM_DT) {
     last_odom_ms += ODOM_DT;
-    float meters = stepsToMeters(stepperY.pos());
-    Serial.println(meters, 6);
- 
+  
+    Serial.print(stepsToMeters(stepperX.pos()), 2); Serial.print(",");
+    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
+    
+    Serial.print(stepsToMeters(stepperY.pos()), 2); Serial.print(",");
+    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
+    
+    Serial.print(stepsToMeters(stepperZ.pos()), 2); Serial.print(",");
+    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
+    
+    Serial.println(stepsToMeters(stepperA.pos()), 2);
   }
 }
