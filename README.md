@@ -199,7 +199,7 @@ We wish to accomplish two things: (1) Command the motors to set a desired chassi
 
 According to [ROS's documentation on wheeled mobile robot kinematics](https://control.ros.org/rolling/doc/ros2_controllers/doc/mobile_robot_kinematics.html), for a robot as shown below:
 
-<p align="center"><img src="images/robot_frame.png" alt="Wheeled Robot" width="300" height="300" /></p>
+<p align="center"><img src="images/robot_frame.PNG" alt="Wheeled Robot" width="300" height="300" /></p>
 
 The inverse kinematics are given by:
 
