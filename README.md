@@ -1,4 +1,4 @@
-![SLAM Robot](slam_robot.png)
+![SLAM Robot](images/slam_robot.png)
 
 # SLAMurai Autonomous Robot
 
@@ -53,7 +53,7 @@ All CAD and software is contained within this repo.
 
 This gives us the total torque required for the robot to meet our acceleration target. However, we need the **worst-case torque per motor**. One might assume it splits evenly between two motors when moving forward/backward or left/right. But could diagonal movement need more?
 
-<img src="image.png" alt="alt text" width="300" height="220" />
+<p align="center"><img src="images/image.png" alt="alt text" width="300" height="220" /></p>
 
 If each motor provides torque $T$, the top/bottom motors contribute $2 T \cos(\theta)$ and left/right motors $2 T \cos(90^\circ - \theta)$, where $\theta$ is the angle of travel. We can solve for $T$ to achieve some total torque $\tau$:
 
@@ -121,7 +121,7 @@ T_{\text{motor}} = \frac{\left( \left( 0.03 \cdot 14 \cdot 9.81 \right) + \left(
 
 If we wished to possibly squeeze more torque out of the motors, in this specific case we can actually pick a lower gear ratio (higher RPM), as shown by this plot:
 
-<img src="torque_rpm.png" alt="alt text" width="400" height="300" />
+<p align="center"><img src="images/torque_rpm.png" alt="alt text" width="400" height="300" /></p>
 
 However if we pick the next higher RPM of 228, our current at 143.24 RPM would be:
 
@@ -193,6 +193,128 @@ To run for 1 hour, we need a battery with at least:
 
 Our 6000mAh battery is more than sufficient, and leaves a good safety margin.
 
+## Wheel Kinematics
+
+We wish to accomplish two things: (1) Command the motors to set a desired chassis twist and (2) read accurate odometry of the robot's x, y, and angular position. We use inverse kinematics of omni robots for the motion control, which tells us "given some target twist, what should the wheel speeds be?" and forward kinematics for odometry, which tells us "given the wheel speeds, what is the robot's twist?"
+
+According to [ROS's documentation on wheeled mobile robot kinematics](https://control.ros.org/rolling/doc/ros2_controllers/doc/mobile_robot_kinematics.html), for a robot as shown below:
+
+<p align="center"><img src="images/robot_frame.png" alt="Wheeled Robot" width="300" height="300" /></p>
+
+The inverse kinematics are given by:
+
+```math
+\begin{split}\begin{bmatrix}
+  \omega_1\\
+  \omega_2\\
+  \omega_3\\
+  \omega_4\\
+  \vdots\\
+  \omega_n
+\end{bmatrix} =
+\frac{1}{r}
+A
+\begin{bmatrix}
+  v_{b,x}\\
+  v_{b,y}\\
+  \omega_{b,z}\\
+\end{bmatrix}\end{split}
+```
+- $\omega_n$ = angular velocity of wheel $n$
+- $[v_{b,x}, v_{b,y}]$ = linear velocity of the robot in the plane
+- $\omega_{b,z}$ = angular velocity of the robot
+- $r$ = radius of the wheels
+- $A$ = transformation matrix mapping body velocities to wheel velocities
+
+```math
+\begin{split}A =
+\begin{bmatrix}
+  \sin(\gamma) & -\cos(\gamma) & -R  \\
+  \sin(\theta + \gamma) & -\cos(\theta + \gamma) & -R\\
+  \sin(2\theta + \gamma) & -\cos(2\theta + \gamma) & -R\\
+  \sin(3\theta + \gamma) & -\cos(3\theta + \gamma) & -R\\
+  \vdots & \vdots & \vdots\\
+  \sin((n-1)\theta + \gamma) & -\cos((n-1)\theta + \gamma) & -R\\
+\end{bmatrix}\end{split}
+```
+
+Here, $R$ is the distance from the center of the robot to the center of each wheel,  $\gamma$ is the angle of the first wheel with respect to the robot frame's x axis, and $\theta$ is the angle between each wheel.
+
+For our robot:
+
+- $r$ = 0.05m
+- $R$ = 0.145m
+- $\gamma$ = 0 rad
+- $\theta$ = $\frac{\pi}{2}$ rad
+
+So let's say we wish to move **0.3 m/s forward along the X axis**:
+
+```math
+\begin{split}\begin{bmatrix}
+  \omega_1\\
+  \omega_2\\
+  \omega_3\\
+  \omega_4
+\end{bmatrix} =
+\frac{1}{0.05}
+\begin{split}
+\begin{bmatrix}
+  \sin(0) & -\cos(0) & -R  \\
+  \sin(\frac{\pi}{2} + 0) & -\cos(\frac{\pi}{2} + 0) & -R\\
+  \sin(\frac{2\pi}{2} + 0) & -\cos(\frac{2\pi}{2} + 0) & -R\\
+  \sin(\frac{3\pi}{2} + 0) & -\cos(\frac{3\pi}{2} + 0) & -R
+\end{bmatrix}\end{split}
+\begin{bmatrix}
+  0.3\\
+  0\\
+  0\\
+\end{bmatrix}\end{split}
+```
+
+```math
+= \frac{1}{0.05}
+\begin{bmatrix}
+  0 & -1 & -0.145  \\
+  1 & 0 & -0.145\\
+  0 & 1 & -0.145\\
+  -1 & 0 & -0.145
+\end{bmatrix}
+\begin{bmatrix}
+  0.3\\
+  0\\
+  0\\
+\end{bmatrix}
+```
+
+```math
+= 
+\frac{1}{0.05}
+\begin{bmatrix}
+  0\\
+  0.3\\
+  0\\
+  0.3\\
+\end{bmatrix}
+= 6 \frac{\text{rad}}{\text{s}}
+```
+Unsuprisingly, if we wish to move forward at 0.3 m/s, the right and left wheels must move linearly at 0.3m/s!
+
+For **forward kinematics** we are inverting the above equations using the *pseudoinverse* of $A$ (a least-squares approximation of actual inverse since $A$ is not square) to find the robot's twist given the wheel speeds.
+
+```math
+\begin{split}\begin{bmatrix}
+  v_{b,x}\\
+  v_{b,y}\\
+  \omega_{b,z}\\
+\end{bmatrix} =
+rA^\dagger
+\begin{bmatrix}
+  \omega_1\\
+  \omega_2\\
+  \omega_3\\
+  \omega_4
+\end{bmatrix}\end{split}
+```
 
 ## License
 
