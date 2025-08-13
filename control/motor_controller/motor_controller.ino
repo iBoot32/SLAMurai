@@ -2,75 +2,107 @@
 #include <math.h>
 
 #define ENABLE_PIN 8
-#define DISABLE_ALL_STEPPERS 0
-#define STEPS_PER_FULL_REV ((long)200)
-#define WHEEL_RADIUS_M 0.05  // 50 mm
+#define DISABLE_ALL_STEPPERS 1
 
-#define RPM_MAX 150
-#define STEPS_PER_SEC_MAX ((RPM_MAX) / 60.0 * (STEPS_PER_FULL_REV))
+// Wheel and movement params
+#define STEPS_PER_REV 800      // 1/4 microstep => 800 steps/rev
+#define WHEEL_RADIUS_M 0.05    // 100 mm diameter
+#define RPM_MAX 65
+#define STEPS_PER_SEC_MAX ((RPM_MAX)/60.0f * (STEPS_PER_REV))
+const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
-#define ODOM_DT 5
-uint32_t last_time_send_odom = 0;
+// Serial R/W
+#define ODOM_DT 40   // 25 Hz
+uint32_t last_odom_ms = 0;
 
+// Non-blocking read serial
+static char rxbuf[32];
+static uint8_t rxlen = 0;
+bool read_line_float(float* out_val) {
+  while (Serial.available()) {
+    char c = (char)Serial.read();
+    if (c == '\r') continue;
+    if (c == '\n') {
+      rxbuf[rxlen] = '\0';
+      rxlen = 0;
+      *out_val = atof(rxbuf);
+      return true;
+    }
+    if (rxlen + 1 < sizeof(rxbuf)) rxbuf[rxlen++] = c;
+  }
+  return false;
+}
+
+// Stepper class, encapsulates stepper setup, velocity setting, and running
 struct Stepper {
-  uint8_t stepPin;
-  uint8_t dirPin;
-  AccelStepper driver;
+  uint8_t stepPin, dirPin;
+  AccelStepper drv;
 
   Stepper(uint8_t step, uint8_t dir)
-    : stepPin(step), dirPin(dir), driver(AccelStepper::DRIVER, step, dir) {}
+  : stepPin(step), dirPin(dir), drv(AccelStepper::DRIVER, step, dir) {}
 
   void setup() {
-    driver.setMaxSpeed(STEPS_PER_SEC_MAX);
+    drv.setMaxSpeed(STEPS_PER_SEC_MAX);
+    drv.setMinPulseWidth(5);
+    drv.setSpeed(0);
   }
 
-  void setLinearVelocity(double v_mps) {
-    double sps = (v_mps / (2.0 * M_PI * WHEEL_RADIUS_M)) *
-                 (double)STEPS_PER_FULL_REV;
-
-    if (fabs(sps) > STEPS_PER_SEC_MAX)
-      sps = copysign(STEPS_PER_SEC_MAX, sps);
-
-    driver.setSpeed(sps);  // signed speed in steps/sec
+  void setLinearVelocity(float v_mps) {
+    float sps = v_mps * STEPS_PER_M;          // signed steps/s
+    if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps);
+    drv.setSpeed(sps);
   }
 
-  void run() { driver.runSpeed(); }  // constant speed
+  inline void service() { drv.runSpeed(); }
+  inline long pos() const { return drv.currentPosition(); }
 };
 
-Stepper stepperX = {2, 5};
+Stepper stepperX(2, 5);
+Stepper stepperY(3, 6);
+Stepper stepperZ(4, 7);
+Stepper stepperA(12, 13);
+
+static inline float stepsToMeters(long steps) {
+  // meters = revs * circumference = (steps/STEPS_PER_REV) * 2πR
+  return (steps / (float)STEPS_PER_REV) * (2.0f * (float)M_PI * WHEEL_RADIUS_M);
+}
 
 void setup() {
   Serial.begin(115200);
   pinMode(ENABLE_PIN, OUTPUT);
-  if (DISABLE_ALL_STEPPERS) { 
-    digitalWrite(ENABLE_PIN, HIGH); 
-    return; 
-  }
-  digitalWrite(ENABLE_PIN, LOW);
+
+  if (DISABLE_ALL_STEPPERS) { digitalWrite(ENABLE_PIN, HIGH); return; }
+  digitalWrite(ENABLE_PIN, LOW);          // enable drivers
+  delayMicroseconds(2000);                // wake/enable settle
 
   stepperX.setup();
+  stepperY.setup();
+  stepperZ.setup();
+  stepperA.setup();
 }
 
 void loop() {
+  // Service steppers ASAP every iteration
+  stepperX.service();
+  stepperY.service();
+  stepperZ.service();
+  stepperA.service();
+
+  // cmd_vel read over serial to set motor speeds
+  float cmd_v;
+  if (read_line_float(&cmd_v)) {
+    stepperX.setLinearVelocity(cmd_v);
+    stepperY.setLinearVelocity(cmd_v);
+    stepperZ.setLinearVelocity(cmd_v);
+    stepperA.setLinearVelocity(cmd_v);
+  }
+
+  // Odom writing over serial
   uint32_t now = millis();
-
-  // Send odom at fixed rate
-  if (now - last_time_send_odom >= ODOM_DT) {
-    last_time_send_odom += ODOM_DT;
-    long curr_step = stepperX.driver.currentPosition();
-    double meters = (curr_step / (double)STEPS_PER_FULL_REV) *
-                    2 * M_PI * WHEEL_RADIUS_M;
-    Serial.println(meters);
+  if (now - last_odom_ms >= ODOM_DT) {
+    last_odom_ms += ODOM_DT;
+    float meters = stepsToMeters(stepperY.pos());
+    Serial.println(meters, 6);
+ 
   }
-
-  // Read cmd_vel whenever it's ready
-  if (Serial.available()) {
-    String line = Serial.readStringUntil('\n');
-    line.trim();
-    double value = line.toFloat();
-    Serial.println(value, 2);
-    stepperX.setLinearVelocity(value);
-  }
-
-  stepperX.run();  // now calls runSpeed()
 }
