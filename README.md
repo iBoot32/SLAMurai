@@ -316,6 +316,140 @@ rA^\dagger
 \end{bmatrix}\end{split}
 ```
 
+## Let's Prototype
+
+Because motors and wheels are expensive ($240 just for wheels and motors!) I opted to prototype on some existing hardware. I have four NEMA 17 stepper motors and an arduino hat to drive them, so I wrote some code to drive them based on cmd_vel I send over serial to the arduino.
+
+I use the `accelstepper` library and make a `Stepper` class to encapsulate setting up each motor, setting their speeds based on a target linear velocity, and more:
+
+```c
+struct Stepper {
+  uint8_t stepPin, dirPin;
+  AccelStepper drv;
+
+  Stepper(uint8_t step, uint8_t dir)
+  : stepPin(step), dirPin(dir), drv(AccelStepper::DRIVER, step, dir) {}
+
+  void setup() {
+    drv.setMaxSpeed(STEPS_PER_SEC_MAX);
+    drv.setMinPulseWidth(3);
+    drv.setSpeed(0);
+  }
+
+  // Converts m/s to steps/s using some #defined constants
+  void setLinearVelocity(float v_mps) {
+    float sps = v_mps * STEPS_PER_M;
+    if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps);
+    drv.setSpeed(sps);
+  }
+
+  inline void service() { drv.runSpeed(); }
+  inline long pos() const { return drv.currentPosition(); }
+};
+```
+
+Then I can setup each motor:
+
+```c
+void setup() {
+  Serial.begin(500000);
+  pinMode(ENABLE_PIN, OUTPUT);
+
+  if (DISABLE_ALL_STEPPERS) { digitalWrite(ENABLE_PIN, HIGH); return; }
+  digitalWrite(ENABLE_PIN, LOW);  // enable drivers
+  delayMicroseconds(2000);        // wake/enable settle
+
+  stepperX.setup();
+  stepperY.setup();
+  stepperZ.setup();
+  stepperA.setup();
+}
+```
+
+And finally read cmd_vel, set motor speeds based on the kinematics I discussed earlier, and (just for testing) print the current motor positions over serial as a placeholder for real odometry (full code is available at `control/motor_controller/motor_controller.ino`):
+
+```c
+void loop() {
+  // Service steppers ASAP every iteration
+  stepperX.service();
+  stepperY.service();
+  stepperZ.service();
+  stepperA.service();
+
+  // Inverse kinematic to obtain wheel linear velocities:  ωi = (sin((i − 1)·θ + γ)·vbx − cos((i − 1)·θ + γ)·vby − R·ωbz)
+  // We pre-compute sin/cos terms using θ=pi/2, γ=0, i=[1,4]
+  float cmd_v[3];
+  if (read_line_float(cmd_v)) {
+    float vx = cmd_v[0];
+    float vy = cmd_v[1];
+    float w  = cmd_v[2];
+  
+    float vX = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vY =  (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vZ =  (vy - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+    float vA = -(vx + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+  
+    stepperX.setLinearVelocity(vX);
+    stepperY.setLinearVelocity(vY);
+    stepperZ.setLinearVelocity(vZ);
+    stepperA.setLinearVelocity(vA);
+  }
+
+  // Send odom
+  uint32_t now = millis();
+  if (now - last_odom_ms >= ODOM_DT) {
+    last_odom_ms += ODOM_DT;
+  
+    Serial.print(stepsToMeters(stepperX.pos()), 2); Serial.print(",");
+    Serial.print(stepsToMeters(stepperY.pos()), 2); Serial.print(",");
+    Serial.print(stepsToMeters(stepperZ.pos()), 2); Serial.print(",");
+    Serial.println(stepsToMeters(stepperA.pos()), 2);
+  }
+}
+```
+
+If I run this code for a few seconds, everything looks great! However I noticed something problematic: my stepper motors fall out of sync after running for a while.
+
+I suspected I was hitting accelstepper's max of roughly 4000 steps/second, however at 800 steps/revolution, and a max testing RPM of 40:
+
+```math
+\frac{40 \text{ rot}}{\text{min}} \cdot \frac{1 \text{ min}}{60 \text{ s}} \cdot \frac{800 \text{ steps}}{1 \text{ rot}} \cdot \text{4 motors} = \frac{65 \cdot 800 \cdot 4}{60} \approx 2133 \text{ steps/s}
+```
+
+So we should have no issue here. I then dropped the frequency of odom sending to just 1hz and noticed an audible click every second, which made me suspect the serial prints were causing inconsistent step timings leading to missed steps.
+
+Let's think. If my odom is sending `0.00,0.00,0.00,0.00\n` that's already 20 bytes. At 115200 baud rate, that's like 2ms per serial print... ouch. With some research I figured this could be improved if serial writes were *non-blocking* since by default it will fill a 64-byte buffer and *then* send. So because I know nothing about that, I had my AI friend cook up this:
+
+```c
+// --------- Non-blocking TX buffer ----------
+static char tx_buf[64];
+static uint8_t tx_pos = 0, tx_len = 0;
+inline void pumpSerial() {
+  if (tx_pos < tx_len) {
+    int room = Serial.availableForWrite();
+    if (room > 0) {
+      int w = min(room, (int)(tx_len - tx_pos));
+      Serial.write((const uint8_t*)&tx_buf[tx_pos], w);
+      tx_pos += w;
+    }
+  }
+}
+
+inline void queueOdomLine(float x, float y, float z, float a) {
+  if (tx_pos == tx_len) {
+    char sx[12], sy[12], sz[12], sa[12];
+    dtostrf(x, 0, 2, sx);
+    dtostrf(y, 0, 2, sy);
+    dtostrf(z, 0, 2, sz);
+    dtostrf(a, 0, 2, sa);
+    tx_len = (uint8_t)snprintf(tx_buf, sizeof(tx_buf), "%s,%s,%s,%s\n", sx, sy, sz, sa);
+    tx_pos = 0;
+  }
+}
+```
+
+Which combined with a higher baud rate (e.g. 1M) actually improved the situation significantly. So we should be in good shape now.
+
 ## License
 
 MIT License
