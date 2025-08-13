@@ -13,7 +13,7 @@
 #define RPM_MAX 65
 #define STEPS_PER_SEC_MAX ((RPM_MAX)/60.0f * (STEPS_PER_REV))
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
-#define ODOM_DT (1000.0 / 20) // 25 Hz
+#define ODOM_DT (1000.0 / 50) // 50 Hz
 uint32_t last_odom_ms = 0;
 
 // Parse cmd_vel serial string into [x, y, w]
@@ -49,7 +49,7 @@ struct Stepper {
 
   void setup() {
     drv.setMaxSpeed(STEPS_PER_SEC_MAX);
-    drv.setMinPulseWidth(5);
+    drv.setMinPulseWidth(3);
     drv.setSpeed(0);
   }
 
@@ -74,7 +74,7 @@ static inline float stepsToMeters(long steps) {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(500000);
   pinMode(ENABLE_PIN, OUTPUT);
 
   if (DISABLE_ALL_STEPPERS) { digitalWrite(ENABLE_PIN, HIGH); return; }
@@ -119,14 +119,8 @@ void loop() {
     last_odom_ms += ODOM_DT;
   
     Serial.print(stepsToMeters(stepperX.pos()), 2); Serial.print(",");
-    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
-    
     Serial.print(stepsToMeters(stepperY.pos()), 2); Serial.print(",");
-    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
-    
     Serial.print(stepsToMeters(stepperZ.pos()), 2); Serial.print(",");
-    stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
-    
     Serial.println(stepsToMeters(stepperA.pos()), 2);
   }
 }
