@@ -413,7 +413,7 @@ If I run this code for a few seconds, everything looks great! However I noticed 
 I suspected I was hitting accelstepper's max of roughly 4000 steps/second, however at 800 steps/revolution, and a max testing RPM of 40:
 
 ```math
-\frac{40 \text{ rot}}{\text{min}} \cdot \frac{1 \text{ min}}{60 \text{ s}} \cdot \frac{800 \text{ steps}}{1 \text{ rot}} \cdot \text{4 motors} = \frac{65 \cdot 800 \cdot 4}{60} \approx 2133 \text{ steps/s}
+\frac{40 \text{ rot}}{\text{min}} \cdot \frac{1 \text{ min}}{60 \text{ s}} \cdot \frac{800 \text{ steps}}{1 \text{ rot}} \cdot \text{4 motors} = \frac{40 \cdot 800 \cdot 4}{60} \approx 2133 \text{ steps/s}
 ```
 
 So we should have no issue here. I then dropped the frequency of odom sending to just 1hz and noticed an audible click every second, which made me suspect the serial prints were causing inconsistent step timings leading to missed steps.
@@ -449,6 +449,41 @@ inline void queueOdomLine(float x, float y, float z, float a) {
 ```
 
 Which combined with a higher baud rate (e.g. 1M) actually improved the situation significantly. So we should be in good shape now.
+
+Because we have this 4000 steps/sec limit shared between all motors, we need to ensure we never command a target twist that exceeds this limit. Nav2 only lets us set a max `vx`, `vy`, and `w` so we must set a hard cutoff and not allow more leeway per motor even if we are operating below this limit.
+
+```math
+v_X = -\left(v_y + R w\right) \\
+v_Y = \left(v_x - R w\right) \\
+v_Z = \left(v_y - R w\right) \\
+v_A = -\left(v_x + R w\right)
+```
+
+```math
+\text{steps per sec} = \text{m/s} \cdot \frac{\text{STEPS\_PER\_REV}}{2 \pi \text{r}} = \text{m/s} \cdot \frac{800}{2 \pi \cdot 0.03175} \approx \text{m/s} \cdot 4010.2
+```
+
+```math
+\text{total velocity} = \left| -\left(v_y + R w\right) \right| + \left| \left(v_x - R w\right) \right| + \left| \left(v_y - R w\right) \right| + \left| -\left(v_x + R w\right) \right|
+```
+
+```math
+\text{total steps/sec} = 4010.2 \cdot \left(\left| v_y + R w\right| + \left| v_x - R w\right| + \left| v_y - R w\right| + \left| v_x + R w\right|\right)
+```
+
+Well, let's pick a target max robot vel of 0.3 m/s, and rotational vel of 1.5 rad/sec (~1.5 sec per rotation and 3 sec per m). This means in the worst case of diagonal movement, each motor contributes $\frac{0.3 m/s}{sqrt(2)}$ m/s along the diagonal for a net of 0.3 m/s. 
+
+**So let's cap at `vx = vy = 0.3/sqrt(2)` and `w = 1.5` and check our resulting steps/sec:**
+
+```math
+4010.2 \cdot \left(\left| 0.21 + 0.145 \cdot 1.5\right| + \left| 0.21 - 0.145 \cdot 1.5\right| + \left| 0.21 - 0.145 \cdot 1.5\right| + \left| 0.21 + 0.145 \cdot 1.5\right|\right)
+```
+
+```math
+\approx 3488 steps/sec
+```
+
+This is under our limit, so we will come back to these limits when we set up nav2 later.
 
 ## License
 
