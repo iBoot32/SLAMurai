@@ -5,13 +5,12 @@
 #define DISABLE_ALL_STEPPERS 1
 
 // Robot params
-#define WHEEL_RADIUS_M 0.05
+#define WHEEL_RADIUS_M 0.03175
 #define ROBOT_CENTER_TO_WHEEL_RADIUS 0.145
 
 // Speed params
 #define STEPS_PER_REV 800
-#define RPM_MAX 65
-#define STEPS_PER_SEC_MAX ((RPM_MAX)/60.0f * (STEPS_PER_REV))
+#define STEPS_PER_SEC_MAX 3500 / 4.0
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
 // Odom
