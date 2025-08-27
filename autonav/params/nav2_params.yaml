@@ -1,0 +1,85 @@
+amcl:
+  ros__parameters:
+    use_sim_time: false
+    odom_frame_id: odom
+    base_frame_id: base_link
+    scan_topic: scan
+    min_particles: 500
+    max_particles: 2000
+
+map_server:
+  ros__parameters:
+    use_sim_time: false
+    yaml_filename: "map.yaml"
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+
+controller_server:
+  ros__parameters:
+    expected_controller_frequency: 10.0
+    controller_plugins: ["DWB"]
+    DWB:
+      plugin: "dwb_core::DWBLocalPlanner"
+      max_vel_x: 0.21
+      min_vel_x: -0.21
+      max_vel_y: 0.21
+      min_vel_y: -0.21
+      max_vel_theta: 1.5
+      min_vel_theta: -1.5
+      acc_lim_x: 0.2
+      acc_lim_y: 0.2
+      acc_lim_theta: 0.75
+      xy_goal_tolerance: 0.05
+      yaw_goal_tolerance: 0.05
+      sim_time: 1.7
+      sim_granularity: 0.025
+      vx_samples: 20
+      vy_samples: 20
+      vtheta_samples: 20
+      occdist_scale: 0.01
+      pdist_scale: 0.6
+      gdist_scale: 0.8
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: false
+
+global_costmap:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link
+    update_frequency: 5.0
+    publish_frequency: 1.0
+    rolling_window: false
+    width: 5.0
+    height: 5.0
+    resolution: 0.05
+    static_layer:
+      plugin: "nav2_costmap_2d/StaticLayer"
+    obstacle_layer:
+      plugin: "nav2_costmap_2d/ObstacleLayer"
+      observation_sources: scan
+      scan: {sensor_frame: laser_link, data_type: LaserScan, marking: true, clearing: true}
+
+local_costmap:
+  ros__parameters:
+    global_frame: odom
+    robot_base_frame: base_link
+    update_frequency: 10.0
+    publish_frequency: 2.0
+    rolling_window: true
+    width: 3.0
+    height: 3.0
+    resolution: 0.05
+    obstacle_layer:
+      plugin: "nav2_costmap_2d/ObstacleLayer"
+      observation_sources: scan
+      scan: {sensor_frame: laser_link, data_type: LaserScan, marking: true, clearing: true}
+    inflation_layer:
+      plugin: "nav2_costmap_2d/InflationLayer"
+      inflation_radius: 0.2

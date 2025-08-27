@@ -17,14 +17,9 @@ include_directories(
 add_executable(RSNode src/RSNode.cpp)
 ament_target_dependencies(RSNode rclcpp sensor_msgs tf2_ros)
 
-# Install launch and config directories
+# Install directories
 install(
-  DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}/
-)
-
-install(
-  DIRECTORY config
+  DIRECTORY launch params urdf config
   DESTINATION share/${PROJECT_NAME}/
 )
 
@@ -34,7 +29,7 @@ install(
   DESTINATION include
 )
 
-# Install IMU subscriber node
+# Install RSNode
 install(TARGETS
   RSNode
   DESTINATION lib/${PROJECT_NAME}
