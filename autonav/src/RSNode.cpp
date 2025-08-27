@@ -9,7 +9,6 @@ RSNode::RSNode() : Node("rs_node")
     imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
         "/imu/data", qos,
         std::bind(&RSNode::imuCallback, this, std::placeholders::_1));
-    RCLCPP_INFO(this->get_logger(), "Subscribed to Madgwick Filter's /imu/data");
 }
 
 void RSNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
