@@ -14,8 +14,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='nav2_bringup',
-            executable='bringup_launch.py',
-            name='nav2_bringup',
+            node_executable='nav2_bringup_launch.py',
+            node_name='nav2_bringup',
             output='screen',
             parameters=[nav2_params_path],
         )

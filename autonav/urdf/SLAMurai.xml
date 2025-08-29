@@ -1,90 +1,73 @@
-<robot name="omni_bot">
-
-  <!-- Root link at ground -->
-  <link name="base_footprint">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <box size="0.001 0.001 0.001" />
-      </geometry>
-    </visual>
-  </link>
-
-  <!-- Base link joint (raised 0.1m above ground) -->
-  <joint name="base_link_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.1" rpy="0 0 0" />
-    <parent link="base_footprint"/>
-    <child link="base_link" />
-  </joint>
-
-  <!-- Circular chassis -->
-  <link name="base_link">
-    <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.02" ixy="0.0" ixz="0.0"
-               iyy="0.02" iyz="0.0"
-               izz="0.02"/>
-    </inertial>
-
-    <visual>
-      <geometry>
-        <cylinder length="0.005" radius="0.125"/> <!-- 250mm diameter -->
-      </geometry>
-      <material name="blue">
-        <color rgba="0 0 1 1"/>
-      </material>
-    </visual>
-
-    <collision>
-      <origin xyz="0 0 0"/>
-      <geometry>
-        <cylinder length="0.05" radius="0.125"/>
-      </geometry>
-    </collision>
-  </link>
-
-   <!-- RealSense camera mounted tangent to chassis -->
-  <link name="realsense_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5708 0 0"/> <!-- rotate cylinder lengthwise along x -->
-      <geometry>
-        <cylinder length="0.09" radius="0.0125"/> <!-- 90mm length, 25mm diameter -->
-      </geometry>
-      <material name="grey">
-        <color rgba="0.5 0.5 0.5 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
-      <geometry>
-        <cylinder length="0.09" radius="0.0125"/>
-      </geometry>
-    </collision>
-  </link>
-
-  <joint name="realsense_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="realsense_link"/>
-    <origin xyz="0.1 0 0.015" rpy="0 0 0"/> <!-- front of base, above chassis center -->
-  </joint>
-
-  <!-- Scan frame attached to RealSense -->
-  <link name="scan">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.02" radius="0.02"/>
-      </geometry>
-      <material name="red">
-        <color rgba="1 0 0 1"/>
-      </material>
-    </visual>
-  </link>
-
-  <joint name="scan_joint" type="fixed">
-    <parent link="realsense_link"/>
-    <child link="scan"/>
-    <origin xyz="0.01 0 0" rpy="0 0 0"/> <!-- in front of camera cylinder -->
-  </joint>
+<robot name="SLAMurai">
+	<!-- Ground reference -->
+	<link name="base_footprint">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.001 0.001 0.001" />
+			</geometry>
+		</visual>
+	</link>
+	<!-- Base link raised above ground -->
+	<joint name="base_link_joint" type="fixed">
+		<origin xyz="0.0 0.0 0.04" rpy="0 0 0" />
+		<parent link="base_footprint"/>
+		<child link="base_link"/>
+	</joint>
+	<!-- Circular chassis -->
+	<link name="base_link">
+		<inertial>
+			<mass value="1.0"/>
+			<origin xyz="0 0 0"/>
+			<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02"/>
+		</inertial>
+		<visual>
+			<geometry>
+				<cylinder length="0.005" radius="0.125"/>
+				<!-- 250mm diameter -->
+			</geometry>
+			<material name="blue">
+				<color rgba="0 0 1 1"/>
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0"/>
+			<geometry>
+				<cylinder length="0.05" radius="0.125"/>
+			</geometry>
+		</collision>
+	</link>
+	<!-- LiDAR link (RealSense D455 used as scan source) -->
+	<link name="lidar_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
+			<!-- Camera is tangent, rotate so scan plane is XY -->
+			<geometry>
+				<cylinder length="0.09" radius="0.0125"/>
+				<!-- Match D455 dimensions -->
+			</geometry>
+			<material name="grey">
+				<color rgba="0.5 0.5 0.5 1"/>
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="1.5708 0 0"/>
+			<geometry>
+				<cylinder length="0.09" radius="0.0125"/>
+			</geometry>
+		</collision>
+	</link>
+	<!-- Joint: lidar mounted on front of chassis -->
+	<joint name="lidar_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="lidar_link"/>
+		<origin xyz="0.125 0 0.015" rpy="0 0 0"/>
+	</joint>
+	<!-- IMU optical frame (D455) -->
+	<link name="camera_imu_optical_frame"/>
+	<joint name="imu_optical_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="camera_imu_optical_frame"/>
+		<origin xyz="-0.03022 0.00740 0.01602" rpy="0 0 3.14159"/>
+	</joint>
 </robot>
