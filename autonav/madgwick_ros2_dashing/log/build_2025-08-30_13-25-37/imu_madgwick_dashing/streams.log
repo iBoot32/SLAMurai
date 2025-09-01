@@ -1,0 +1,35 @@
+[0.071s] Invoking command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing': /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing
+[0.284s] -- The C compiler identification is GNU 7.5.0
+[0.515s] -- The CXX compiler identification is GNU 7.5.0
+[0.534s] -- Check for working C compiler: /usr/bin/cc
+[0.903s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.905s] -- Detecting C compiler ABI info
+[1.273s] -- Detecting C compiler ABI info - done
+[1.297s] -- Detecting C compile features
+[2.286s] -- Detecting C compile features - done
+[2.298s] -- Check for working CXX compiler: /usr/bin/c++
+[2.679s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[2.684s] -- Detecting CXX compiler ABI info
+[3.075s] -- Detecting CXX compiler ABI info - done
+[3.089s] -- Detecting CXX compile features
+[4.756s] -- Detecting CXX compile features - done
+[4.797s] CMake Error at CMakeLists.txt:4 (find_package):
+[4.798s]   By not providing "Findament_cmake.cmake" in CMAKE_MODULE_PATH this project
+[4.798s]   has asked CMake to find a package configuration file provided by
+[4.799s]   "ament_cmake", but CMake did not find one.
+[4.799s] 
+[4.800s]   Could not find a package configuration file provided by "ament_cmake" with
+[4.800s]   any of the following names:
+[4.801s] 
+[4.801s]     ament_cmakeConfig.cmake
+[4.802s]     ament_cmake-config.cmake
+[4.802s] 
+[4.802s]   Add the installation prefix of "ament_cmake" to CMAKE_PREFIX_PATH or set
+[4.803s]   "ament_cmake_DIR" to a directory containing one of the above files.  If
+[4.803s]   "ament_cmake" provides a separate development package or SDK, be sure it
+[4.804s]   has been installed.
+[4.805s] 
+[4.806s] 
+[4.807s] -- Configuring incomplete, errors occurred!
+[4.808s] See also "/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/CMakeOutput.log".
+[4.809s] Invoked command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing' returned '1': /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing

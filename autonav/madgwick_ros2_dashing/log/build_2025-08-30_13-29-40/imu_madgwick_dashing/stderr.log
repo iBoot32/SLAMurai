@@ -1,0 +1,10 @@
+[01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:[m[K In member function ‘[01m[Kvoid Madgwick::updateIMU(double, double, double, double, double, double, double)[m[K’:
+[01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:168:14:[m[K [01;31m[Kerror: [m[Kredeclaration of ‘[01m[Kdouble recipNorm[m[K’
+       double [01;31m[KrecipNorm[m[K = invSqrt(s0*s0 + s1*s1 + s2*s2 + s3*s3);
+              [01;31m[K^~~~~~~~~[m[K
+[01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:146:14:[m[K [01;36m[Knote: [m[K‘[01m[Kdouble recipNorm[m[K’ previously declared here
+       double [01;36m[KrecipNorm[m[K = invSqrt(ax*ax + ay*ay + az*az);
+              [01;36m[K^~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/madgwick_node.dir/src/madgwick_node.cpp.o] Error 1
+make[1]: *** [CMakeFiles/madgwick_node.dir/all] Error 2
+make: *** [all] Error 2

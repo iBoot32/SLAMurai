@@ -1,0 +1,53 @@
+[0.077s] Invoking command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing': /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing
+[0.199s] -- Found ament_cmake: 0.7.6 (/opt/ros/dashing/share/ament_cmake/cmake)
+[0.341s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.6.9", minimum required is "3") 
+[0.342s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.603s] -- Found rclcpp: 0.7.16 (/opt/ros/dashing/share/rclcpp/cmake)
+[1.824s] -- Found rosidl_adapter: 0.7.10 (/opt/ros/dashing/share/rosidl_adapter/cmake)
+[2.153s] -- Found rmw_implementation_cmake: 0.7.2 (/opt/ros/dashing/share/rmw_implementation_cmake/cmake)
+[2.159s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.163s] -- Looking for pthread.h
+[2.576s] -- Looking for pthread.h - found
+[2.579s] -- Looking for pthread_create
+[2.979s] -- Looking for pthread_create - not found
+[2.979s] -- Looking for pthread_create in pthreads
+[3.308s] -- Looking for pthread_create in pthreads - not found
+[3.309s] -- Looking for pthread_create in pthread
+[3.671s] -- Looking for pthread_create in pthread - found
+[3.675s] -- Found Threads: TRUE  
+[3.818s] -- Found sensor_msgs: 0.7.1 (/opt/ros/dashing/share/sensor_msgs/cmake)
+[3.982s] -- Found tf2: 0.11.6 (/opt/ros/dashing/share/tf2/cmake)
+[4.036s] -- Found tf2_ros: 0.11.6 (/opt/ros/dashing/share/tf2_ros/cmake)
+[4.731s] Error parsing '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/package.xml':
+[5.002s] Traceback (most recent call last):
+[5.002s]   File "/opt/ros/dashing/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 143, in <module>
+[5.003s]     main()
+[5.004s]   File "/opt/ros/dashing/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 52, in main
+[5.004s]     raise e
+[5.005s]   File "/opt/ros/dashing/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 49, in main
+[5.006s]     args.package_xml.read(), filename=args.package_xml.name)
+[5.006s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 786, in parse_package_string
+[5.006s]     raise InvalidPackage('Error(s):%s' % (''.join(['\n- %s' % e for e in errors])), filename)
+[5.007s] catkin_pkg.package.InvalidPackage: Error(s) in package '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/package.xml':
+[5.007s] Error(s):
+[5.007s] - The generic dependency on 'rclcpp' is redundant with: exec_depend
+[5.008s] - The generic dependency on 'sensor_msgs' is redundant with: exec_depend
+[5.008s] - The generic dependency on 'geometry_msgs' is redundant with: exec_depend
+[5.008s] - The generic dependency on 'tf2' is redundant with: exec_depend
+[5.009s] - The generic dependency on 'tf2_ros' is redundant with: exec_depend
+[5.073s] CMake Error at /opt/ros/dashing/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:94 (message):
+[5.075s]   execute_process(/usr/bin/python3
+[5.075s]   /opt/ros/dashing/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py
+[5.075s]   /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/package.xml
+[5.076s]   /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/ament_cmake_core/package.cmake)
+[5.076s]   returned error code 1
+[5.076s] Call Stack (most recent call first):
+[5.077s]   /opt/ros/dashing/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)
+[5.077s]   /opt/ros/dashing/share/ament_cmake_core/cmake/core/ament_package.cmake:63 (ament_package_xml)
+[5.078s]   CMakeLists.txt:27 (ament_package)
+[5.078s] 
+[5.079s] 
+[5.079s] -- Configuring incomplete, errors occurred!
+[5.080s] See also "/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/CMakeOutput.log".
+[5.081s] See also "/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/CMakeError.log".
+[5.091s] Invoked command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing' returned '1': /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing
