@@ -1,0 +1,1 @@
+ament_cmake_symlink_install_targets("TARGET_FILES" "/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/madgwick_node" "TARGETS" "madgwick_node" "DESTINATION" "lib/imu_madgwick_dashing")

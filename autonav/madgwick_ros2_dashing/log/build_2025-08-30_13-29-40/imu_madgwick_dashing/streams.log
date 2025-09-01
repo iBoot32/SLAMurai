@@ -1,0 +1,32 @@
+[0.078s] Invoking command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing': CMAKE_PREFIX_PATH=/opt/ros/dashing /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing
+[0.139s] -- Found ament_cmake: 0.7.6 (/opt/ros/dashing/share/ament_cmake/cmake)
+[0.287s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[1.279s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[1.329s] -- Found rclcpp: 0.7.16 (/opt/ros/dashing/share/rclcpp/cmake)
+[1.404s] -- Found rosidl_adapter: 0.7.10 (/opt/ros/dashing/share/rosidl_adapter/cmake)
+[1.573s] -- Found rmw_implementation_cmake: 0.7.2 (/opt/ros/dashing/share/rmw_implementation_cmake/cmake)
+[1.580s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.698s] -- Found sensor_msgs: 0.7.1 (/opt/ros/dashing/share/sensor_msgs/cmake)
+[1.800s] -- Found tf2: 0.11.6 (/opt/ros/dashing/share/tf2/cmake)
+[1.815s] -- Found tf2_ros: 0.11.6 (/opt/ros/dashing/share/tf2_ros/cmake)
+[2.536s] -- Configuring done
+[2.710s] -- Generating done
+[2.718s] -- Build files have been written to: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing
+[2.733s] Invoked command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing' returned '0': CMAKE_PREFIX_PATH=/opt/ros/dashing /usr/bin/cmake /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing
+[2.755s] Invoking command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing': CMAKE_PREFIX_PATH=/opt/ros/dashing /usr/bin/cmake --build /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing -- -j6 -l6
+[2.958s] [35m[1mScanning dependencies of target madgwick_node[0m
+[3.141s] [ 50%] [32mBuilding CXX object CMakeFiles/madgwick_node.dir/src/madgwick_node.cpp.o[0m
+[8.082s] [01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:[m[K In member function ‘[01m[Kvoid Madgwick::updateIMU(double, double, double, double, double, double, double)[m[K’:
+[8.083s] [01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:168:14:[m[K [01;31m[Kerror: [m[Kredeclaration of ‘[01m[Kdouble recipNorm[m[K’
+[8.084s]        double [01;31m[KrecipNorm[m[K = invSqrt(s0*s0 + s1*s1 + s2*s2 + s3*s3);
+[8.085s]               [01;31m[K^~~~~~~~~[m[K
+[8.086s] [01m[K/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/src/madgwick_node.cpp:146:14:[m[K [01;36m[Knote: [m[K‘[01m[Kdouble recipNorm[m[K’ previously declared here
+[8.087s]        double [01;36m[KrecipNorm[m[K = invSqrt(ax*ax + ay*ay + az*az);
+[8.088s]               [01;36m[K^~~~~~~~~[m[K
+[13.004s] CMakeFiles/madgwick_node.dir/build.make:62: recipe for target 'CMakeFiles/madgwick_node.dir/src/madgwick_node.cpp.o' failed
+[13.005s] make[2]: *** [CMakeFiles/madgwick_node.dir/src/madgwick_node.cpp.o] Error 1
+[13.008s] make[1]: *** [CMakeFiles/madgwick_node.dir/all] Error 2
+[13.009s] CMakeFiles/Makefile2:67: recipe for target 'CMakeFiles/madgwick_node.dir/all' failed
+[13.010s] make: *** [all] Error 2
+[13.012s] Makefile:140: recipe for target 'all' failed
+[13.026s] Invoked command in '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing' returned '2': CMAKE_PREFIX_PATH=/opt/ros/dashing /usr/bin/cmake --build /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing -- -j6 -l6

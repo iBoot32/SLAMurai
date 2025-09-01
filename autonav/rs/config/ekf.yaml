@@ -1,0 +1,30 @@
+ekf_filter_node:
+  ros__parameters:
+    frequency: 50.0
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+    two_d_mode: true
+
+    # IMU
+    imu0: /imu_madgwick
+    imu0_config: [false, false, false,   # x y z
+	          true, true, true,      # roll pitch yaw
+	          false, false, false,   # vx vy vz 
+	          true, true, true,      # vroll vpitch vyaw
+	          true, true, true]      # ax ay az
+    imu0_remove_gravitational_acceleration: false
+    
+    # Odometry
+    odom0: /odometry/raw
+    odom0_config: [false, false, false,    # x y z
+                   false, false, true,   # roll pitch yaw
+                   true, true, false,    # vx vy vz
+                   false, false, false,  # angular velocity
+                   false, false, false]  # linear accel
+
+    publish_tf: true
+
+
+
+

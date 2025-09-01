@@ -1,0 +1,232 @@
+[0.000000] (-) TimerEvent: {}
+[0.002123] (imu_madgwick_dashing) JobQueued: {'identifier': 'imu_madgwick_dashing', 'dependencies': OrderedDict()}
+[0.004234] (imu_madgwick_dashing) JobStarted: {'identifier': 'imu_madgwick_dashing'}
+[0.072331] (imu_madgwick_dashing) JobProgress: {'identifier': 'imu_madgwick_dashing', 'progress': 'cmake'}
+[0.081279] (imu_madgwick_dashing) JobProgress: {'identifier': 'imu_madgwick_dashing', 'progress': 'build'}
+[0.085247] (imu_madgwick_dashing) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing', '--', '-j6', '-l6'], 'cwd': '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('UNITY_DEFAULT_PROFILE', 'unity-lowgfx'), ('GTK_CSD', '0'), ('USER', 'purduerm'), ('UNITY_HAS_3D_SUPPORT', 'false'), ('TEXTDOMAIN', 'im-config'), ('COMPIZ_CONFIG_PROFILE', 'ubuntu'), ('XDG_SESSION_TYPE', 'x11'), ('GNOME_SESSION_XDG_SESSION_PATH', ''), ('LD_LIBRARY_PATH', '/usr/lib/aarch64-linux-gnu/gazebo-9/plugins:/opt/ros/dashing/opt/yaml_cpp_vendor/lib:/opt/ros/dashing/opt/rviz_ogre_vendor/lib:/opt/ros/dashing/lib:/usr/local/cuda-10.2/lib64'), ('SHLVL', '2'), ('OLDPWD', '/home/purduerm/ros2_ws/src/SLAMurai/autonav'), ('QT4_IM_MODULE', 'xim'), ('HOME', '/home/purduerm'), ('DESKTOP_SESSION', 'unity'), ('GTK_MODULES', 'gail:atk-bridge:unity-gtk-module'), ('ROS_PYTHON_VERSION', '3'), ('MANAGERPID', '4532'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=9d604436ea39f8215bef601868af2332'), ('COLORTERM', 'truecolor'), ('MANDATORY_PATH', '/usr/share/gconf/unity.mandatory.path'), ('IM_CONFIG_PHASE', '2'), ('ROS_DISTRO', 'dashing'), ('LOGNAME', 'purduerm'), ('GTK_IM_MODULE', 'ibus'), ('JOURNAL_STREAM', '8:38595'), ('_', '/usr/bin/colcon'), ('DEFAULTS_PATH', '/usr/share/gconf/unity.default.path'), ('ROS_VERSION', '2'), ('USERNAME', 'purduerm'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('WINDOWPATH', '1'), ('PATH', '/opt/ros/dashing/bin:/usr/local/cuda-10.2/bin:/home/purduerm/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('INVOCATION_ID', 'c6522aece13c46c5b956cc86d1a19782'), ('SESSION_MANAGER', 'local/tegra-ubuntu:@/tmp/.ICE-unix/6490,unix/tegra-ubuntu:/tmp/.ICE-unix/6490'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/13fc2623_dc49_4a6f_a4e8_2ff60d07d4f3'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('ZEITGEIST_DATA_PATH', '/home/purduerm/.local/share/zeitgeist'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity:Unity7:ubuntu'), ('LD_PRELOAD', 'libgtk3-nocsd.so.0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_SESSION_DESKTOP', 'unity'), ('XMODIFIERS', '@im=ibus'), ('GNOME_TERMINAL_SERVICE', ':1.160'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('AMENT_PREFIX_PATH', '/opt/ros/dashing'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'unity'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('TEXTDOMAINDIR', '/usr/share/locale/'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('QT_IM_MODULE', 'ibus'), ('LC_ALL', 'en_US.UTF-8'), ('PWD', '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing'), ('CLUTTER_IM_MODULE', 'xim'), ('XDG_DATA_DIRS', '/usr/share/unity:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=9d604436ea39f8215bef601868af2332'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-unity:/etc/xdg'), ('PYTHONPATH', '/opt/ros/dashing/lib/python3.6/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '5202'), ('CMAKE_PREFIX_PATH', '/opt/ros/dashing')]), 'shell': False}
+[0.100690] (-) TimerEvent: {}
+[0.207274] (-) TimerEvent: {}
+[0.305688] (imu_madgwick_dashing) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target madgwick_node\x1b[0m\n'}
+[0.307335] (-) TimerEvent: {}
+[0.407931] (-) TimerEvent: {}
+[0.457440] (imu_madgwick_dashing) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/madgwick_node.dir/src/madgwick_node.cpp.o\x1b[0m\n'}
+[0.508094] (-) TimerEvent: {}
+[0.608776] (-) TimerEvent: {}
+[0.709557] (-) TimerEvent: {}
+[0.810340] (-) TimerEvent: {}
+[0.911254] (-) TimerEvent: {}
+[1.012304] (-) TimerEvent: {}
+[1.113397] (-) TimerEvent: {}
+[1.214361] (-) TimerEvent: {}
+[1.315236] (-) TimerEvent: {}
+[1.416140] (-) TimerEvent: {}
+[1.517275] (-) TimerEvent: {}
+[1.618360] (-) TimerEvent: {}
+[1.719168] (-) TimerEvent: {}
+[1.819866] (-) TimerEvent: {}
+[1.920669] (-) TimerEvent: {}
+[2.021673] (-) TimerEvent: {}
+[2.122473] (-) TimerEvent: {}
+[2.223278] (-) TimerEvent: {}
+[2.324140] (-) TimerEvent: {}
+[2.424846] (-) TimerEvent: {}
+[2.525788] (-) TimerEvent: {}
+[2.626613] (-) TimerEvent: {}
+[2.727478] (-) TimerEvent: {}
+[2.828264] (-) TimerEvent: {}
+[2.929286] (-) TimerEvent: {}
+[3.030027] (-) TimerEvent: {}
+[3.130864] (-) TimerEvent: {}
+[3.231614] (-) TimerEvent: {}
+[3.332500] (-) TimerEvent: {}
+[3.433521] (-) TimerEvent: {}
+[3.534517] (-) TimerEvent: {}
+[3.635242] (-) TimerEvent: {}
+[3.736142] (-) TimerEvent: {}
+[3.836882] (-) TimerEvent: {}
+[3.937915] (-) TimerEvent: {}
+[4.038739] (-) TimerEvent: {}
+[4.139502] (-) TimerEvent: {}
+[4.240246] (-) TimerEvent: {}
+[4.341111] (-) TimerEvent: {}
+[4.441832] (-) TimerEvent: {}
+[4.542638] (-) TimerEvent: {}
+[4.643310] (-) TimerEvent: {}
+[4.744150] (-) TimerEvent: {}
+[4.846197] (-) TimerEvent: {}
+[4.947220] (-) TimerEvent: {}
+[5.048124] (-) TimerEvent: {}
+[5.149183] (-) TimerEvent: {}
+[5.250068] (-) TimerEvent: {}
+[5.350896] (-) TimerEvent: {}
+[5.451654] (-) TimerEvent: {}
+[5.552630] (-) TimerEvent: {}
+[5.653567] (-) TimerEvent: {}
+[5.754501] (-) TimerEvent: {}
+[5.855473] (-) TimerEvent: {}
+[5.956494] (-) TimerEvent: {}
+[6.057346] (-) TimerEvent: {}
+[6.158381] (-) TimerEvent: {}
+[6.259349] (-) TimerEvent: {}
+[6.360305] (-) TimerEvent: {}
+[6.461104] (-) TimerEvent: {}
+[6.561926] (-) TimerEvent: {}
+[6.662739] (-) TimerEvent: {}
+[6.763820] (-) TimerEvent: {}
+[6.864872] (-) TimerEvent: {}
+[6.965905] (-) TimerEvent: {}
+[7.067025] (-) TimerEvent: {}
+[7.168127] (-) TimerEvent: {}
+[7.269169] (-) TimerEvent: {}
+[7.370114] (-) TimerEvent: {}
+[7.471083] (-) TimerEvent: {}
+[7.572058] (-) TimerEvent: {}
+[7.673106] (-) TimerEvent: {}
+[7.774065] (-) TimerEvent: {}
+[7.874951] (-) TimerEvent: {}
+[7.975709] (-) TimerEvent: {}
+[8.076542] (-) TimerEvent: {}
+[8.177536] (-) TimerEvent: {}
+[8.278544] (-) TimerEvent: {}
+[8.379447] (-) TimerEvent: {}
+[8.480240] (-) TimerEvent: {}
+[8.581129] (-) TimerEvent: {}
+[8.682032] (-) TimerEvent: {}
+[8.782960] (-) TimerEvent: {}
+[8.883853] (-) TimerEvent: {}
+[8.984689] (-) TimerEvent: {}
+[9.085631] (-) TimerEvent: {}
+[9.186549] (-) TimerEvent: {}
+[9.287571] (-) TimerEvent: {}
+[9.388322] (-) TimerEvent: {}
+[9.489021] (-) TimerEvent: {}
+[9.589921] (-) TimerEvent: {}
+[9.690877] (-) TimerEvent: {}
+[9.791845] (-) TimerEvent: {}
+[9.892800] (-) TimerEvent: {}
+[9.993768] (-) TimerEvent: {}
+[10.094772] (-) TimerEvent: {}
+[10.195776] (-) TimerEvent: {}
+[10.296778] (-) TimerEvent: {}
+[10.397853] (-) TimerEvent: {}
+[10.498859] (-) TimerEvent: {}
+[10.599737] (-) TimerEvent: {}
+[10.700717] (-) TimerEvent: {}
+[10.801856] (-) TimerEvent: {}
+[10.902798] (-) TimerEvent: {}
+[11.003845] (-) TimerEvent: {}
+[11.104877] (-) TimerEvent: {}
+[11.205960] (-) TimerEvent: {}
+[11.306965] (-) TimerEvent: {}
+[11.407787] (-) TimerEvent: {}
+[11.508597] (-) TimerEvent: {}
+[11.609562] (-) TimerEvent: {}
+[11.710514] (-) TimerEvent: {}
+[11.811477] (-) TimerEvent: {}
+[11.912290] (-) TimerEvent: {}
+[12.013234] (-) TimerEvent: {}
+[12.114017] (-) TimerEvent: {}
+[12.214767] (-) TimerEvent: {}
+[12.315573] (-) TimerEvent: {}
+[12.416343] (-) TimerEvent: {}
+[12.517257] (-) TimerEvent: {}
+[12.618027] (-) TimerEvent: {}
+[12.718743] (-) TimerEvent: {}
+[12.819599] (-) TimerEvent: {}
+[12.920350] (-) TimerEvent: {}
+[13.021355] (-) TimerEvent: {}
+[13.122149] (-) TimerEvent: {}
+[13.223011] (-) TimerEvent: {}
+[13.323822] (-) TimerEvent: {}
+[13.424664] (-) TimerEvent: {}
+[13.525452] (-) TimerEvent: {}
+[13.626262] (-) TimerEvent: {}
+[13.727078] (-) TimerEvent: {}
+[13.827859] (-) TimerEvent: {}
+[13.928597] (-) TimerEvent: {}
+[14.029450] (-) TimerEvent: {}
+[14.130352] (-) TimerEvent: {}
+[14.231297] (-) TimerEvent: {}
+[14.332254] (-) TimerEvent: {}
+[14.433285] (-) TimerEvent: {}
+[14.534098] (-) TimerEvent: {}
+[14.634824] (-) TimerEvent: {}
+[14.735712] (-) TimerEvent: {}
+[14.836671] (-) TimerEvent: {}
+[14.937599] (-) TimerEvent: {}
+[15.038332] (-) TimerEvent: {}
+[15.139231] (-) TimerEvent: {}
+[15.239993] (-) TimerEvent: {}
+[15.340797] (-) TimerEvent: {}
+[15.441666] (-) TimerEvent: {}
+[15.542393] (-) TimerEvent: {}
+[15.643096] (-) TimerEvent: {}
+[15.743903] (-) TimerEvent: {}
+[15.844772] (-) TimerEvent: {}
+[15.945674] (-) TimerEvent: {}
+[16.046574] (-) TimerEvent: {}
+[16.147359] (-) TimerEvent: {}
+[16.248204] (-) TimerEvent: {}
+[16.349213] (-) TimerEvent: {}
+[16.450063] (-) TimerEvent: {}
+[16.550918] (-) TimerEvent: {}
+[16.651741] (-) TimerEvent: {}
+[16.752569] (-) TimerEvent: {}
+[16.853634] (-) TimerEvent: {}
+[16.954438] (-) TimerEvent: {}
+[17.055255] (-) TimerEvent: {}
+[17.156080] (-) TimerEvent: {}
+[17.257095] (-) TimerEvent: {}
+[17.358201] (-) TimerEvent: {}
+[17.459245] (-) TimerEvent: {}
+[17.560114] (-) TimerEvent: {}
+[17.661144] (-) TimerEvent: {}
+[17.723865] (imu_madgwick_dashing) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable madgwick_node\x1b[0m\n'}
+[17.761332] (-) TimerEvent: {}
+[17.862251] (-) TimerEvent: {}
+[17.963250] (-) TimerEvent: {}
+[18.064320] (-) TimerEvent: {}
+[18.165558] (-) TimerEvent: {}
+[18.266519] (-) TimerEvent: {}
+[18.367446] (-) TimerEvent: {}
+[18.468302] (-) TimerEvent: {}
+[18.569118] (-) TimerEvent: {}
+[18.670008] (-) TimerEvent: {}
+[18.735897] (imu_madgwick_dashing) StdoutLine: {'line': b'[100%] Built target madgwick_node\n'}
+[18.770192] (-) TimerEvent: {}
+[18.775275] (imu_madgwick_dashing) CommandEnded: {'returncode': 0}
+[18.870666] (-) TimerEvent: {}
+[18.925591] (imu_madgwick_dashing) JobProgress: {'identifier': 'imu_madgwick_dashing', 'progress': 'install'}
+[18.971423] (-) TimerEvent: {}
+[18.990899] (imu_madgwick_dashing) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing', '--target', 'install', '--', '-j6', '-l6'], 'cwd': '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('UNITY_DEFAULT_PROFILE', 'unity-lowgfx'), ('GTK_CSD', '0'), ('USER', 'purduerm'), ('UNITY_HAS_3D_SUPPORT', 'false'), ('TEXTDOMAIN', 'im-config'), ('COMPIZ_CONFIG_PROFILE', 'ubuntu'), ('XDG_SESSION_TYPE', 'x11'), ('GNOME_SESSION_XDG_SESSION_PATH', ''), ('LD_LIBRARY_PATH', '/usr/lib/aarch64-linux-gnu/gazebo-9/plugins:/opt/ros/dashing/opt/yaml_cpp_vendor/lib:/opt/ros/dashing/opt/rviz_ogre_vendor/lib:/opt/ros/dashing/lib:/usr/local/cuda-10.2/lib64'), ('SHLVL', '2'), ('OLDPWD', '/home/purduerm/ros2_ws/src/SLAMurai/autonav'), ('QT4_IM_MODULE', 'xim'), ('HOME', '/home/purduerm'), ('DESKTOP_SESSION', 'unity'), ('GTK_MODULES', 'gail:atk-bridge:unity-gtk-module'), ('ROS_PYTHON_VERSION', '3'), ('MANAGERPID', '4532'), ('DBUS_STARTER_BUS_TYPE', 'session'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus,guid=9d604436ea39f8215bef601868af2332'), ('COLORTERM', 'truecolor'), ('MANDATORY_PATH', '/usr/share/gconf/unity.mandatory.path'), ('IM_CONFIG_PHASE', '2'), ('ROS_DISTRO', 'dashing'), ('LOGNAME', 'purduerm'), ('GTK_IM_MODULE', 'ibus'), ('JOURNAL_STREAM', '8:38595'), ('_', '/usr/bin/colcon'), ('DEFAULTS_PATH', '/usr/share/gconf/unity.default.path'), ('ROS_VERSION', '2'), ('USERNAME', 'purduerm'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('WINDOWPATH', '1'), ('PATH', '/opt/ros/dashing/bin:/usr/local/cuda-10.2/bin:/home/purduerm/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('INVOCATION_ID', 'c6522aece13c46c5b956cc86d1a19782'), ('SESSION_MANAGER', 'local/tegra-ubuntu:@/tmp/.ICE-unix/6490,unix/tegra-ubuntu:/tmp/.ICE-unix/6490'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/13fc2623_dc49_4a6f_a4e8_2ff60d07d4f3'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('ZEITGEIST_DATA_PATH', '/home/purduerm/.local/share/zeitgeist'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity:Unity7:ubuntu'), ('LD_PRELOAD', 'libgtk3-nocsd.so.0'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('XDG_SESSION_DESKTOP', 'unity'), ('XMODIFIERS', '@im=ibus'), ('GNOME_TERMINAL_SERVICE', ':1.160'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('AMENT_PREFIX_PATH', '/opt/ros/dashing'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'unity'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('TEXTDOMAINDIR', '/usr/share/locale/'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('QT_IM_MODULE', 'ibus'), ('LC_ALL', 'en_US.UTF-8'), ('PWD', '/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing'), ('CLUTTER_IM_MODULE', 'xim'), ('XDG_DATA_DIRS', '/usr/share/unity:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('DBUS_STARTER_ADDRESS', 'unix:path=/run/user/1000/bus,guid=9d604436ea39f8215bef601868af2332'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-unity:/etc/xdg'), ('PYTHONPATH', '/opt/ros/dashing/lib/python3.6/site-packages'), ('COLCON', '1'), ('VTE_VERSION', '5202'), ('CMAKE_PREFIX_PATH', '/opt/ros/dashing')]), 'shell': False}
+[19.071626] (-) TimerEvent: {}
+[19.173083] (-) TimerEvent: {}
+[19.274027] (-) TimerEvent: {}
+[19.319976] (imu_madgwick_dashing) StdoutLine: {'line': b'[100%] Built target madgwick_node\n'}
+[19.374255] (-) TimerEvent: {}
+[19.397604] (imu_madgwick_dashing) StdoutLine: {'line': b'\x1b[36mInstall the project...\x1b[0m\n'}
+[19.450018] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[19.453426] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[19.457553] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/lib/imu_madgwick_dashing/madgwick_node\n'}
+[19.474378] (-) TimerEvent: {}
+[19.493447] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/ament_index/resource_index/package_run_dependencies/imu_madgwick_dashing\n'}
+[19.528289] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/ament_index/resource_index/parent_prefix_path/imu_madgwick_dashing\n'}
+[19.564216] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/environment/ament_prefix_path.sh\n'}
+[19.574588] (-) TimerEvent: {}
+[19.616717] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/environment/path.sh\n'}
+[19.670429] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/local_setup.bash\n'}
+[19.674777] (-) TimerEvent: {}
+[19.723316] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/local_setup.sh\n'}
+[19.755849] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/local_setup.zsh\n'}
+[19.774991] (-) TimerEvent: {}
+[19.809547] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/ament_index/resource_index/packages/imu_madgwick_dashing\n'}
+[19.862061] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/cmake/imu_madgwick_dashingConfig.cmake\n'}
+[19.875452] (-) TimerEvent: {}
+[19.914249] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/cmake/imu_madgwick_dashingConfig-version.cmake\n'}
+[19.967819] (imu_madgwick_dashing) StdoutLine: {'line': b'-- Symlinking: /home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/install/imu_madgwick_dashing/share/imu_madgwick_dashing/package.xml\n'}
+[19.975337] (-) TimerEvent: {}
+[20.029910] (imu_madgwick_dashing) CommandEnded: {'returncode': 0}
+[20.076867] (-) TimerEvent: {}
+[20.177748] (-) TimerEvent: {}
+[20.270350] (imu_madgwick_dashing) JobEnded: {'identifier': 'imu_madgwick_dashing', 'rc': 0}
+[20.274575] (-) EventReactorShutdown: {}
