@@ -219,11 +219,11 @@ public:
     this->declare_parameter<std::string>("output_frame", "camera_imu_optical_frame");
     this->declare_parameter<bool>("use_magnetometer", false);
     this->declare_parameter<bool>("publish_tf", false);
-    this->declare_parameter<double>("beta", 0.1);
+    this->declare_parameter<double>("beta", 0.2);
     this->declare_parameter<bool>("remove_gravity", true);
-    this->declare_parameter<double>("bias_x", 0.000172);
-    this->declare_parameter<double>("bias_y", 0.03150);
-    this->declare_parameter<double>("bias_z", 0.001694);
+    this->declare_parameter<double>("bias_x", -0.001140);
+    this->declare_parameter<double>("bias_y", 0.14651);
+    this->declare_parameter<double>("bias_z", 0.0);
 
 
     imu_topic_ = this->get_parameter("imu_topic").as_string();
@@ -331,9 +331,13 @@ private:
       double qw = q[0], qx = q[1], qy = q[2], qz = q[3];
 
       // Rotate gravity vector (0,0,9.81) into sensor frame
-      double g_x = 2.0*(qx*qz - qw*qy) * 9.8067;
-      double g_y = 2.0*(qw*qx + qy*qz) * 9.8067;
-      double g_z = (qw*qw - qx*qx - qy*qy + qz*qz) * 9.8067;
+      double up_x = 2.0*(qx*qz - qw*qy);
+      double up_y = 2.0*(qw*qx + qy*qz);
+      double up_z = (qw*qw - qx*qx - qy*qy + qz*qz);
+
+      double g_x = up_x * 9.8067;
+      double g_y = up_y * 9.8067;
+      double g_z = up_z * 9.8067;
 
       ax -= g_x;
       ay -= g_y;
