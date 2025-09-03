@@ -39,9 +39,9 @@
     </link>
     <!-- Odom frame -->
     <link name="odom"/>
-    <joint name="odom_joint" type="fixed">
-        <parent link="base_footprint"/>
-        <child link="odom"/>
+    <joint name="odom_to_base_footprint" type="fixed">
+        <parent link="odom"/>
+        <child link="base_footprint"/>
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
     <!-- LiDAR link (RealSense D455 used as scan source) -->

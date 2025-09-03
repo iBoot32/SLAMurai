@@ -54,7 +54,7 @@ configurable_parameters = [  # full list from your post...
     {'name': 'pointcloud_texture_index', 'default': '0', 'description': 'testure stream index for pointcloud'},
     {'name': 'enable_sync', 'default': 'false', 'description': ''},
     {'name': 'align_depth', 'default': 'false', 'description': ''},
-    {'name': 'filters', 'default': "'decimation,spatial,temporal,hole_filling'", 'description': ''},
+    {'name': 'filters', 'default': "'spatial,temporal,hole_filling'", 'description': ''},
     {'name': 'clip_distance', 'default': '-2.', 'description': ''},
     {'name': 'linear_accel_cov', 'default': '0.01', 'description': ''},
     {'name': 'initial_reset', 'default': 'false', 'description': ''},
@@ -106,6 +106,7 @@ def generate_launch_description():
     rs_share_dir = get_package_share_directory('rs')
     ekf_config_path = os.path.join(rs_share_dir, 'config', 'ekf.yaml')
     urdf_file = os.path.join(rs_share_dir, 'urdf', 'SLAMurai.xml')
+    toolbox_params_path = os.path.join(rs_share_dir, 'params', 'slam_toolbox.yaml')
 
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
@@ -164,6 +165,14 @@ def generate_launch_description():
                     'range_max': 10.0,
                     'scan_height': 30,
                 }]
+            ),
+
+            launch_ros.actions.Node(
+                package="slam_toolbox",
+                node_executable="async_slam_toolbox_node",
+                node_name="slam_toolbox",
+                output="screen",
+                parameters=[toolbox_params_path],
             )
         ]
     )
