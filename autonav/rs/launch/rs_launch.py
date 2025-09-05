@@ -114,12 +114,12 @@ def generate_launch_description():
             DeclareLaunchArgument('log_level', default_value='info', description='Logging level'),
             OpaqueFunction(function=launch_setup),
 
-            launch_ros.actions.Node(
-                package='rs',
-                node_executable='RSNode',
-                node_name='RSNode',
-                output='screen',
-            ),
+            #launch_ros.actions.Node(
+            #    package='rs',
+            #    node_executable='main.py',
+            #    node_name='main',
+            #    output='screen',
+            #),
 
             # Robot State Publisher for TFs from URDF
             launch_ros.actions.Node(
@@ -162,8 +162,8 @@ def generate_launch_description():
                 parameters=[{
                     'output_frame': 'camera_depth_frame',
                     'range_min': 0.05,
-                    'range_max': 10.0,
-                    'scan_height': 30,
+                    'range_max': 7.0,
+                    'scan_height': 20,
                 }]
             ),
 
