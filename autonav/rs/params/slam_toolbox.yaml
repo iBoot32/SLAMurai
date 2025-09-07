@@ -5,7 +5,7 @@ slam_toolbox:
     mode: "mapping"
     map_file_name: ""
     odom_frame: "odom"
-    base_frame: "base_footprint"
+    base_frame: "base_link"
     scan_topic: "/scan"
     resolution: 0.05
     transform_publish_period: 0.02

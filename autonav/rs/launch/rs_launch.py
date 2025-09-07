@@ -22,11 +22,11 @@ configurable_parameters = [  # full list from your post...
     {'name': 'enable_depth', 'default': 'true', 'description': 'enable depth stream'},
     {'name': 'color_width', 'default': '640', 'description': 'color image width'},
     {'name': 'color_height', 'default': '480', 'description': 'color image height'},
-    {'name': 'enable_color', 'default': 'true', 'description': 'enable color stream'},
+    {'name': 'enable_color', 'default': 'false', 'description': 'enable color stream'},
     {'name': 'infra_width', 'default': '-1', 'description': 'infra width'},
     {'name': 'infra_height', 'default': '-1', 'description': 'infra width'},
-    {'name': 'enable_infra1', 'default': 'true', 'description': 'enable infra1 stream'},
-    {'name': 'enable_infra2', 'default': 'true', 'description': 'enable infra2 stream'},
+    {'name': 'enable_infra1', 'default': 'false', 'description': 'enable infra1 stream'},
+    {'name': 'enable_infra2', 'default': 'false', 'description': 'enable infra2 stream'},
     {'name': 'infra_rgb', 'default': 'false', 'description': 'enable infra2 stream'},
     {'name': 'fisheye_width', 'default': '-1', 'description': 'fisheye width'},
     {'name': 'fisheye_height', 'default': '-1', 'description': 'fisheye width'},
@@ -36,7 +36,7 @@ configurable_parameters = [  # full list from your post...
     {'name': 'confidence_height', 'default': '-1', 'description': 'depth image height'},
     {'name': 'enable_confidence', 'default': 'true', 'description': 'enable depth stream'},
     {'name': 'fisheye_fps', 'default': '-1.', 'description': ''},
-    {'name': 'depth_fps', 'default': '30.', 'description': ''},
+    {'name': 'depth_fps', 'default': '10.', 'description': ''},
     {'name': 'confidence_fps', 'default': '-1.', 'description': ''},
     {'name': 'infra_fps', 'default': '-1.', 'description': ''},
     {'name': 'color_fps', 'default': '30.', 'description': ''},
@@ -54,25 +54,25 @@ configurable_parameters = [  # full list from your post...
     {'name': 'pointcloud_texture_index', 'default': '0', 'description': 'testure stream index for pointcloud'},
     {'name': 'enable_sync', 'default': 'false', 'description': ''},
     {'name': 'align_depth', 'default': 'false', 'description': ''},
-    {'name': 'filters', 'default': "'spatial,temporal,hole_filling'", 'description': ''},
-    {'name': 'clip_distance', 'default': '-2.', 'description': ''},
+    {'name': 'filters', 'default': "'spatial,temporal'", 'description': ''},
+    {'name': 'clip_distance', 'default': '4.0', 'description': ''},
     {'name': 'linear_accel_cov', 'default': '0.01', 'description': ''},
     {'name': 'initial_reset', 'default': 'false', 'description': ''},
     {'name': 'allow_no_texture_points', 'default': 'true', 'description': ''},
-    {'name': 'ordered_pc', 'default': 'true', 'description': ''},
+    {'name': 'ordered_pc', 'default': 'false', 'description': ''},
     {'name': 'calib_odom_file', 'default': "''", 'description': "''"},
     {'name': 'topic_odom_in', 'default': "''", 'description': 'topic for T265 wheel odometry'},
     {'name': 'tf_publish_rate', 'default': '0.0', 'description': 'Rate of publishing static_tf'},
     {'name': 'diagnostics_period', 'default': '0.0', 'description': 'Rate of publishing diagnostics. 0=Disabled'},
     {'name': 'rosbag_filename', 'default': "''", 'description': 'A realsense bagfile to run from as a device'},
     {'name': 'temporal.holes_fill', 'default': '0', 'description': 'Persistency mode'},
+    {'name': 'stereo_module.laser_power', 'default': '360.0', 'description': 'Initial value for hdr_merge filter'},
     {'name': 'stereo_module.exposure.1', 'default': '7500', 'description': 'Initial value for hdr_merge filter'},
     {'name': 'stereo_module.gain.1', 'default': '16', 'description': 'Initial value for hdr_merge filter'},
     {'name': 'stereo_module.exposure.2', 'default': '1', 'description': 'Initial value for hdr_merge filter'},
     {'name': 'stereo_module.gain.2', 'default': '16', 'description': 'Initial value for hdr_merge filter'},
     {'name': 'wait_for_device_timeout', 'default': '-1.', 'description': 'Timeout for waiting for device to connect (Seconds)'},
     {'name': 'reconnect_timeout', 'default': '6.', 'description': 'Timeout(seconds) between consequtive reconnection attempts'},
-
 ]
 
 def declare_configurable_parameters(parameters):
@@ -87,7 +87,7 @@ def launch_setup(context, *args, **kwargs):
     
     output_mode = LaunchConfiguration('output').perform(context)
     log_level = LaunchConfiguration('log_level').perform(context)
-    camera_namespace = LaunchConfiguration('camera_name').perform(context)  # Using camera_name as namespace too; adjust if you want different
+    camera_namespace = LaunchConfiguration('camera_name').perform(context)
     camera_name = LaunchConfiguration('camera_name').perform(context)
 
     return [
@@ -114,12 +114,12 @@ def generate_launch_description():
             DeclareLaunchArgument('log_level', default_value='info', description='Logging level'),
             OpaqueFunction(function=launch_setup),
 
-            #launch_ros.actions.Node(
-            #    package='rs',
-            #    node_executable='main.py',
-            #    node_name='main',
-            #    output='screen',
-            #),
+            launch_ros.actions.Node(
+               package='rs',
+               node_executable='main.py',
+               node_name='main',
+               output='screen',
+            ),
 
             # Robot State Publisher for TFs from URDF
             launch_ros.actions.Node(
@@ -173,7 +173,14 @@ def generate_launch_description():
                 node_name="slam_toolbox",
                 output="screen",
                 parameters=[toolbox_params_path],
-            )
+            ),
+
+            launch_ros.actions.Node(
+                package="cmdvel_gui",
+                node_executable="cmdvel_gui",
+                node_name="cmdvel_gui",
+                output="screen",
+            ),
         ]
     )
 
