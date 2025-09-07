@@ -9,7 +9,7 @@ def read_odom(ser):
 
 if __name__ == "__main__":
     port = '/dev/ttyACM0'
-    baud = 115200
+    baud = 1000000
     N = 500
 
     ser = serial.Serial(port, baud, timeout=0.1)
@@ -33,9 +33,10 @@ if __name__ == "__main__":
             if msg_count % 50 == 0: print("Odom Read:", odom)
 
         # Send cmd_vel test (in reality nav2 will only give to us at 10hz, so no timing needed)
-        # now = time.time()
-        # if now - last_cmd_vel_send_time >= (1.0 / 10):
-            # last_cmd_vel_send_time = now
-            # cmd_vel = "CMD_VEL 0.1 0.0\n"  # example: linear_x=0.1 m/s, angular_z=0.0 rad/s
-            # ser.write(cmd_vel.encode())
+        now = time.time()
+        if now - last_cmd_vel_send_time >= (1.0 / 1):
+            cmd_vel = "0.0,0.0,0.0\n"  # example: linear_x=0.1 m/s, angular_z=0.0 rad/s
+            ser.write(cmd_vel.encode())
+            print(f'wrote at {time.time() - last_cmd_vel_send_time}')
+            last_cmd_vel_send_time = now
 
