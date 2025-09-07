@@ -9,7 +9,7 @@ import time
 
 
 class CmdVelSerialOdom(Node):
-    def __init__(self, ser, hz=10.0):
+    def __init__(self, ser, hz=20.0):
         super().__init__('cmdvel_serial_odom')
         self.ser = ser
 
@@ -78,7 +78,7 @@ def main():
 
     port = '/dev/ttyACM0'
     baud = 1000000
-    hz = 10.0
+    hz = 20.0
 
     # Configure non-blocking serial
     ser = serial.Serial(
