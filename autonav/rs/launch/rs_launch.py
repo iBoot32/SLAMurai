@@ -13,7 +13,7 @@ configurable_parameters = [  # full list from your post...
     {'name': 'device_type', 'default': "''", 'description': 'choose device by type'},
     {'name': 'config_file', 'default': "''", 'description': 'yaml config file'},
     {'name': 'enable_pointcloud', 'default': 'true', 'description': 'enable pointcloud'},
-    {'name': 'unite_imu_method', 'default': "'linear_interpolation'", 'description': '[copy|linear_interpolation]'},
+    {'name': 'unite_imu_method', 'default': "'copy'", 'description': '[copy|linear_interpolation]'},
     {'name': 'json_file_path', 'default': "''", 'description': 'allows advanced configuration'},
     {'name': 'log_level', 'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
     {'name': 'output', 'default': 'screen', 'description': 'pipe node output [screen|log]'},
@@ -36,7 +36,7 @@ configurable_parameters = [  # full list from your post...
     {'name': 'confidence_height', 'default': '-1', 'description': 'depth image height'},
     {'name': 'enable_confidence', 'default': 'true', 'description': 'enable depth stream'},
     {'name': 'fisheye_fps', 'default': '-1.', 'description': ''},
-    {'name': 'depth_fps', 'default': '10.', 'description': ''},
+    {'name': 'depth_fps', 'default': '15.', 'description': ''},
     {'name': 'confidence_fps', 'default': '-1.', 'description': ''},
     {'name': 'infra_fps', 'default': '-1.', 'description': ''},
     {'name': 'color_fps', 'default': '30.', 'description': ''},
@@ -162,8 +162,8 @@ def generate_launch_description():
                 parameters=[{
                     'output_frame': 'camera_depth_frame',
                     'range_min': 0.05,
-                    'range_max': 7.0,
-                    'scan_height': 20,
+                    'range_max': 4.0,
+                    'scan_height': 10,
                 }]
             ),
 
