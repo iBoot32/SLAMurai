@@ -24,7 +24,3 @@ ekf_filter_node:
                    false, false, false]    # linear accel
 
     publish_tf: true
-    
-
-
-

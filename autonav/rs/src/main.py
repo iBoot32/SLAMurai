@@ -31,7 +31,6 @@ class CmdVelSerialOdom(Node):
 
         # Timers: odometry publishing
         self.create_timer(1.0 / hz, self.publish_odom)
-        self.create_timer(1.0 / 50, self.read_odom)
 
     def cmd_vel_callback(self, msg: Twist):
         # Store received velocities
@@ -41,12 +40,6 @@ class CmdVelSerialOdom(Node):
 
         cmd = f"{self.vx},{self.vy},{self.wz}\n"
         self.ser.write(cmd.encode())
-
-    def read_odom(self):
-        line = self.ser.readline()
-        if not line:
-            return None
-        return line.decode(errors='ignore').strip()
 
     def publish_odom(self):
         msg = Odometry()
