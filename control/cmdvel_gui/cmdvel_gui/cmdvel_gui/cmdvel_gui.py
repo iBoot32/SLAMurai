@@ -17,9 +17,9 @@ class CmdVelGUI(Node):
 
         # Default min/max velocities
         self.vel_limits = {
-            'linear.x': [0.1, 0.35],
-            'linear.y': [0.1, 0.35],
-            'angular.z': [0.1, 1.75]
+            'linear.x': [0.01, 0.35],
+            'linear.y': [0.01, 0.35],
+            'angular.z': [0.01, 1.75]
         }
 
         # Default button speeds

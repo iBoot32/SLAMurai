@@ -68,14 +68,14 @@
     <joint name="lidar_joint" type="fixed">
         <parent link="base_link"/>
         <child link="lidar_link"/>
-        <origin xyz="0.125 0 0.015" rpy="0 0 0"/>
+        <origin xyz="0.104 0 0.015" rpy="0 0 0"/>
     </joint>
     <!-- IMU optical frame (D455) -->
     <link name="camera_imu_optical_frame"/>
     <joint name="imu_optical_joint" type="fixed">
         <parent link="base_link"/>
         <child link="camera_imu_optical_frame"/>
-        <origin xyz="-0.03022 0.00740 0.01602" rpy="0 0 3.14159"/>
+        <origin xyz="0.104 0 0.015" rpy="0 0 3.14159"/>
     </joint>
     <!-- Depth sensor frame -->
     <link name="camera_depth_frame"/>
@@ -83,7 +83,7 @@
         <parent link="base_link"/>
         <child link="camera_depth_frame"/>
         <!-- D455 depth sensor: roughly 38 mm forward, 0 lateral, 42 mm up from base_link -->
-        <origin xyz="0.038 0.0 0.042" rpy="0 0 0"/>
+        <origin xyz="0.104 0 0.025" rpy="0 0 0"/>
     </joint>
     <!-- Depth optical frame (Z forward, X right, Y down) -->
     <link name="camera_depth_optical_frame"/>
