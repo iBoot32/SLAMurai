@@ -1,3 +1,10 @@
+<!-- Frames -->
+<!--   base_link:  center of robot chassis -->
+<!--   base_footprint:  "footprint" of robot on ground -->
+<!--   odom:  NOT set in URDF. Published by odometry node (robot_localization EKF) -->
+<!--   lidar_link:  lidar frame for realsense -->
+<!--   misc camera frames:  for realsense depth/color -->
+
 <robot name="SLAMurai">
     <!-- Ground reference -->
     <link name="base_footprint">
@@ -8,83 +15,58 @@
             </geometry>
         </visual>
     </link>
-    <!-- Base link raised above ground -->
+
+    <!-- base_link raised above ground from base_footprint -->
     <joint name="base_link_joint" type="fixed">
         <origin xyz="0.0 0.0 0.04" rpy="0 0 0" />
         <parent link="base_footprint"/>
         <child link="base_link"/>
     </joint>
-    <!-- Circular chassis -->
     <link name="base_link">
-        <inertial>
-            <mass value="1.0"/>
-            <origin xyz="0 0 0"/>
-            <inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02"/>
-        </inertial>
         <visual>
             <geometry>
                 <cylinder length="0.005" radius="0.125"/>
-                <!-- 250mm diameter -->
             </geometry>
             <material name="blue">
                 <color rgba="0 0 1 1"/>
             </material>
         </visual>
-        <collision>
-            <origin xyz="0 0 0"/>
-            <geometry>
-                <cylinder length="0.05" radius="0.125"/>
-            </geometry>
-        </collision>
     </link>
-    <!-- Odom frame -->
-    <link name="odom"/>
-    <joint name="odom_to_base_footprint" type="fixed">
-        <parent link="odom"/>
-        <child link="base_footprint"/>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
+
     <!-- LiDAR link (RealSense D455 used as scan source) -->
+    <joint name="lidar_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="lidar_link"/>
+        <origin xyz="0.14 0 0.015" rpy="0 0 0"/>
+    </joint>
     <link name="lidar_link">
         <visual>
             <origin xyz="0 0 0" rpy="1.5708 0 0"/>
-            <!-- Camera is tangent, rotate so scan plane is XY -->
             <geometry>
                 <cylinder length="0.09" radius="0.0125"/>
-                <!-- Match D455 dimensions -->
             </geometry>
             <material name="grey">
                 <color rgba="0.5 0.5 0.5 1"/>
             </material>
         </visual>
-        <collision>
-            <origin xyz="0 0 0" rpy="1.5708 0 0"/>
-            <geometry>
-                <cylinder length="0.09" radius="0.0125"/>
-            </geometry>
-        </collision>
     </link>
-    <!-- Joint: lidar mounted on front of chassis -->
-    <joint name="lidar_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="lidar_link"/>
-        <origin xyz="0.104 0 0.015" rpy="0 0 0"/>
-    </joint>
+
     <!-- IMU optical frame (D455) -->
     <link name="camera_imu_optical_frame"/>
     <joint name="imu_optical_joint" type="fixed">
         <parent link="base_link"/>
         <child link="camera_imu_optical_frame"/>
-        <origin xyz="0.104 0 0.015" rpy="0 0 3.14159"/>
+        <origin xyz="0.14 0 0.015" rpy="0 0 3.14159"/>
     </joint>
+
     <!-- Depth sensor frame -->
     <link name="camera_depth_frame"/>
     <joint name="camera_depth_joint" type="fixed">
         <parent link="base_link"/>
         <child link="camera_depth_frame"/>
-        <!-- D455 depth sensor: roughly 38 mm forward, 0 lateral, 42 mm up from base_link -->
-        <origin xyz="0.104 0 0.025" rpy="0 0 0"/>
+        <origin xyz="0.14 0 0.025" rpy="0 0 0"/>
     </joint>
+
     <!-- Depth optical frame (Z forward, X right, Y down) -->
     <link name="camera_depth_optical_frame"/>
     <joint name="depth_optical_joint" type="fixed">
@@ -93,4 +75,5 @@
         <!-- ROS optical convention: X right, Y down, Z forward -->
         <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
     </joint>
+
 </robot>
