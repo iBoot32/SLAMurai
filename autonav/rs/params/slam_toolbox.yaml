@@ -5,7 +5,7 @@ slam_toolbox:
     mode: "mapping"
     map_file_name: ""
     odom_frame: "odom"
-    base_frame: "base_link"
+    base_frame: "base_footprint"
     scan_topic: "/scan"
     resolution: 0.05
     transform_publish_period: 0.05
@@ -15,5 +15,3 @@ slam_toolbox:
     minimum_travel_heading: 0.05
     max_laser_range: 4.0
     min_laser_range: 0.15
-
-
