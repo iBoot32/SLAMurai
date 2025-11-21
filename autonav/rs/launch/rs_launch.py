@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 
 # Your configurable parameters list
-configurable_parameters = [  # full list from your post...
+configurable_parameters = [
     {'name': 'camera_name', 'default': 'camera', 'description': 'camera unique name'},
     {'name': 'serial_no', 'default': "''", 'description': 'choose device by serial number'},
     {'name': 'usb_port_id', 'default': "''", 'description': 'choose device by usb port id'},
@@ -40,8 +40,8 @@ configurable_parameters = [  # full list from your post...
     {'name': 'confidence_fps', 'default': '-1.', 'description': ''},
     {'name': 'infra_fps', 'default': '-1.', 'description': ''},
     {'name': 'color_fps', 'default': '30.', 'description': ''},
-    {'name': 'gyro_fps', 'default': '-1.', 'description': ''},
-    {'name': 'accel_fps', 'default': '-1.', 'description': ''},
+    {'name': 'gyro_fps', 'default': '200.', 'description': ''},
+    {'name': 'accel_fps', 'default': '200.', 'description': ''},
     {'name': 'color_qos', 'default': 'SYSTEM_DEFAULT', 'description': 'QoS profile name'},
     {'name': 'confidence_qos', 'default': 'SYSTEM_DEFAULT', 'description': 'QoS profile name'},
     {'name': 'depth_qos', 'default': 'SYSTEM_DEFAULT', 'description': 'QoS profile name'},

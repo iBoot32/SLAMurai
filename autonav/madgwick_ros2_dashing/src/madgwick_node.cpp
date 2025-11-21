@@ -268,11 +268,11 @@ private:
       dt = (stamp - last_stamp_).seconds();
       if (dt <= 0.0 || dt > 1.0) {
         // bad dt; try using a small fallback
-        dt = 1.0 / 100.0;
+        dt = 1.0 / 200.0;
       }
     } else {
       last_stamp_set_ = true;
-      dt = 1.0 / 100.0;
+      dt = 1.0 / 200.0;
     }
     last_stamp_ = stamp;
 
