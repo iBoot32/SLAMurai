@@ -160,7 +160,7 @@ def generate_launch_description():
                     ('scan', '/scan'),
                 ],
                 parameters=[{
-                    'output_frame': 'camera_depth_frame',
+                    'output_frame': 'lidar_link',
                     'range_min': 0.05,
                     'range_max': 4.0,
                     'scan_height': 10,
