@@ -2,46 +2,16 @@
 #include <math.h>
 
 #define ENABLE_PIN 8
-#define DISABLE_ALL_STEPPERS 1
+#define DISABLE_ALL_STEPPERS 0
 
 // Robot params
-#define WHEEL_RADIUS_M 0.03175
-#define ROBOT_CENTER_TO_WHEEL_RADIUS 0.145
+#define WHEEL_RADIUS_M 0.03575
+#define ROBOT_CENTER_TO_WHEEL_RADIUS 0.127
 
 // Speed params
 #define STEPS_PER_REV 800
-#define STEPS_PER_SEC_MAX 3500 / 4.0
+#define STEPS_PER_SEC_MAX 3750 / 4.0
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
-
-// Odom
-#define ODOM_DT (1000.0 / 50) // 50 Hz
-uint32_t last_odom_ms = 0;
-
-// --------- Non-blocking TX buffer ----------
-static char tx_buf[64];
-static uint8_t tx_pos = 0, tx_len = 0;
-inline void pumpSerial() {
-  if (tx_pos < tx_len) {
-    int room = Serial.availableForWrite();
-    if (room > 0) {
-      int w = min(room, (int)(tx_len - tx_pos));
-      Serial.write((const uint8_t*)&tx_buf[tx_pos], w);
-      tx_pos += w;
-    }
-  }
-}
-
-inline void queueOdomLine(float x, float y, float z, float a) {
-  if (tx_pos == tx_len) {
-    char sx[12], sy[12], sz[12], sa[12];
-    dtostrf(x, 0, 2, sx);
-    dtostrf(y, 0, 2, sy);
-    dtostrf(z, 0, 2, sz);
-    dtostrf(a, 0, 2, sa);
-    tx_len = (uint8_t)snprintf(tx_buf, sizeof(tx_buf), "%s,%s,%s,%s\n", sx, sy, sz, sa);
-    tx_pos = 0;
-  }
-}
 
 // ------- cmd_vel Parser --------
 bool read_line_float(float* out) {
@@ -76,9 +46,9 @@ struct Stepper {
 };
 
 Stepper stepperX(2, 5);
-Stepper stepperY(3, 6);
-Stepper stepperZ(4, 7);
-Stepper stepperA(12, 13);
+Stepper stepperY(4, 7);
+Stepper stepperZ(12, 13);
+Stepper stepperA(3, 6);
 
 static inline float stepsToMeters(long steps) {
   return (steps / (float)STEPS_PER_REV) * (2.0f * (float)M_PI * WHEEL_RADIUS_M);
@@ -92,13 +62,9 @@ void setup() {
   delayMicroseconds(2000);
 
   stepperX.setup(); stepperY.setup(); stepperZ.setup(); stepperA.setup();
-  last_odom_ms = millis();
 }
 
 void loop() {
-  // Drain TX so prints never block
-  pumpSerial();
-
   // Service steppers
   stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
 
@@ -115,21 +81,4 @@ void loop() {
     stepperZ.setLinearVelocity(vZ);
     stepperA.setLinearVelocity(vA);
   }
-
-  // Odom snapshot and queue
-  uint32_t now = millis();
-  if (now - last_odom_ms >= ODOM_DT) {
-    last_odom_ms += ODOM_DT;
-    queueOdomLine(
-      stepsToMeters(stepperX.pos()),
-      stepsToMeters(stepperY.pos()),
-      stepsToMeters(stepperZ.pos()),
-      stepsToMeters(stepperA.pos())
-    );
-  }
-
-  stepperX.service(); stepperY.service(); stepperZ.service(); stepperA.service();
-
-  // Keep draining TX
-  pumpSerial();
 }
