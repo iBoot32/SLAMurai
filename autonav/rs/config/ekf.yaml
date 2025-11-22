@@ -1,26 +1,27 @@
 ekf_filter_node:
   ros__parameters:
     frequency: 50.0
-    odom_frame: odom
-    base_link_frame: base_link
+    # set odom_frame = world_frame, so ekf publishes odom_frame -> base_link_frame
+    odom_frame: odom 
     world_frame: odom
+    base_link_frame: base_link
     two_d_mode: true
 
-    # IMU
+    # IMU provides angular vel and linear acc, Madgwick Filter provides orientation
     imu0: /imu_madgwick
-    imu0_config: [false, false, false,   # x y z
-	          true, true, true,         # roll pitch yaw
-	          false, false, false,         # vx vy vz 
-	          true, true, true,         # vroll vpitch vyaw
-	          true, true, true]         # ax ay az
-    imu0_remove_gravitational_acceleration: false
+    imu0_config: [false, false, false,      # x y z
+                  true, true, true,         # roll pitch yaw
+                  false, false, false,      # vx vy vz 
+                  true, true, true,         # vroll vpitch vyaw
+                  true, true, true]         # ax ay az
+    imu0_remove_gravitational_acceleration: false # gravity is removed in madgwick filter
     
-    # Odometry
+    # Odometry is approximated by my chassis twist commands because system is open-loop due to using stepper motors 
     odom0: /odometry/raw
     odom0_config: [false, false, false,    # x y z
                    false, false, false,    # roll pitch yaw
                    true, true, false,      # vx vy vz
-                   false, false, false,     # angular velocity
+                   false, false, false,    # angular velocity
                    false, false, false]    # linear accel
 
-    publish_tf: true
+    publish_tf: true # Publish world_frame -> base_link_frame

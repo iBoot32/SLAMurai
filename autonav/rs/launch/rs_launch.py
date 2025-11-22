@@ -39,7 +39,7 @@ configurable_parameters = [
     {'name': 'depth_fps', 'default': '15.', 'description': ''},
     {'name': 'confidence_fps', 'default': '-1.', 'description': ''},
     {'name': 'infra_fps', 'default': '-1.', 'description': ''},
-    {'name': 'color_fps', 'default': '30.', 'description': ''},
+    {'name': 'color_fps', 'default': '10.', 'description': ''},
     {'name': 'gyro_fps', 'default': '200.', 'description': ''},
     {'name': 'accel_fps', 'default': '200.', 'description': ''},
     {'name': 'color_qos', 'default': 'SYSTEM_DEFAULT', 'description': 'QoS profile name'},
