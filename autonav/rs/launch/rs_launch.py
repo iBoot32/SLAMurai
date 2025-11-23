@@ -22,7 +22,7 @@ configurable_parameters = [
     {'name': 'enable_depth', 'default': 'true', 'description': 'enable depth stream'},
     {'name': 'color_width', 'default': '640', 'description': 'color image width'},
     {'name': 'color_height', 'default': '480', 'description': 'color image height'},
-    {'name': 'enable_color', 'default': 'false', 'description': 'enable color stream'},
+    {'name': 'enable_color', 'default': 'true', 'description': 'enable color stream'},
     {'name': 'infra_width', 'default': '-1', 'description': 'infra width'},
     {'name': 'infra_height', 'default': '-1', 'description': 'infra width'},
     {'name': 'enable_infra1', 'default': 'false', 'description': 'enable infra1 stream'},
