@@ -223,7 +223,7 @@ public:
     this->declare_parameter<bool>("remove_gravity", true);
     this->declare_parameter<double>("bias_x", -0.001140);
     this->declare_parameter<double>("bias_y", 0.14651);
-    this->declare_parameter<double>("bias_z", 0.0);
+    this->declare_parameter<double>("bias_z", 0.163);
 
 
     imu_topic_ = this->get_parameter("imu_topic").as_string();
