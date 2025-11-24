@@ -216,7 +216,7 @@ public:
     // parameters with Dashing-compatible declare_parameter usage
     this->declare_parameter<std::string>("imu_topic", "/camera/imu");
     this->declare_parameter<std::string>("mag_topic", "/mag");
-    this->declare_parameter<std::string>("output_frame", "camera_imu_optical_frame");
+    this->declare_parameter<std::string>("output_frame", "lidar_link");
     this->declare_parameter<bool>("use_magnetometer", false);
     this->declare_parameter<bool>("publish_tf", false);
     this->declare_parameter<double>("beta", 0.2);
