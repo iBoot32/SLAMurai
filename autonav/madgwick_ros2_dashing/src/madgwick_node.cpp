@@ -284,6 +284,23 @@ private:
     double ay = msg->linear_acceleration.y;
     double az = msg->linear_acceleration.z;
 
+    // --- rotate IMU from camera_imu_optical_frame -> base_link ---
+    tf2::Quaternion q_rot;
+    q_rot.setRPY(M_PI/2.0, 0, -M_PI/2.0); // 90deg roll, 0 pitch, -90deg yaw
+
+    tf2::Vector3 accel(ax, ay, az);
+    tf2::Vector3 gyro(gx, gy, gz);
+
+    accel = tf2::quatRotate(q_rot, accel);
+    gyro  = tf2::quatRotate(q_rot, gyro);
+
+    ax = accel.x(); ay = accel.y(); az = accel.z();
+    gx = gyro.x();  gy = gyro.y();  gz = gyro.z();
+
+    // --- fix forward direction axes ---
+    ax = -ax;
+    gx = -gx;
+
     double mx=0.0, my=0.0, mz=0.0;
     if (use_mag_) {
       std::lock_guard<std::mutex> lk(mag_mutex_);
