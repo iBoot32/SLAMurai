@@ -6,14 +6,16 @@
 <!--   misc camera frames:  for realsense depth/color -->
 
 <robot name="SLAMurai">
-<!-- Base footprint (on ground) -->
+  <!-- Base footprint (on ground) -->
   <link name="base_footprint">
     <visual>
       <geometry>
         <box size="0.001 0.001 0.001" />
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <material name="blue"/>
+      <material name="grey">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
     </visual>
   </link>
 
@@ -24,7 +26,9 @@
         <cylinder radius="0.13" length="0.005"/>
       </geometry>
       <origin xyz="0 0 0.005" rpy="0 0 0"/>
-      <material name="gray"/>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
     </visual>
   </link>
 
@@ -38,62 +42,20 @@
   <link name="lidar_link">
     <visual>
       <geometry>
-        <box size="0.026 0.124 0.029"/> <!-- approximate dimensions of D455 -->
+        <box size="0.026 0.124 0.029"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <material name="black"/>
+      <material name="grey">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
     </visual>
   </link>
 
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0.114 0 0.04" rpy="3.14159 0 0"/> <!-- upside down -->
+    <origin xyz="0.114 0 0.04" rpy="3.14159 0 0"/> <!-- Realsense is upside down on robot -->
   </joint>
 
-  <!-- Wheels (approximate positions) -->
-  <!-- Front-left wheel visual -->
-  <link name="wheel_front_left">
-    <visual>
-      <geometry>
-        <cylinder radius="0.037" length="0.01"/>
-      </geometry>
-      <origin xyz="0.13 0 0.037" rpy="0 1.5708 0"/> <!-- position on side, rotate cylinder -->
-      <material name="black"/>
-    </visual>
-  </link>
-
-  <!-- Front-right wheel visual -->
-  <link name="wheel_front_right">
-    <visual>
-      <geometry>
-        <cylinder radius="0.037" length="0.01"/>
-      </geometry>
-      <origin xyz="0 -0.13 0.037" rpy="0 1.5708 1.5708"/>
-      <material name="black"/>
-    </visual>
-  </link>
-
-  <!-- Rear-left wheel visual -->
-  <link name="wheel_rear_left">
-    <visual>
-      <geometry>
-        <cylinder radius="0.037" length="0.01"/>
-      </geometry>
-      <origin xyz="-0.13 0 0.037" rpy="0 1.5708 0"/>
-      <material name="black"/>
-    </visual>
-  </link>
-
-  <!-- Rear-right wheel visual -->
-  <link name="wheel_rear_right">
-    <visual>
-      <geometry>
-        <cylinder radius="0.037" length="0.01"/>
-      </geometry>
-      <origin xyz="0 0.13 0.037" rpy="0 1.5708 1.5708"/>
-      <material name="black"/>
-    </visual>
-  </link>
-
 </robot>
+
