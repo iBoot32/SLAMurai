@@ -175,12 +175,12 @@ def generate_launch_description():
                 parameters=[toolbox_params_path],
             ),
 
-            launch_ros.actions.Node(
-                package="cmdvel_gui",
-                node_executable="cmdvel_gui",
-                node_name="cmdvel_gui",
-                output="screen",
-            ),
+            # launch_ros.actions.Node(
+            #     package="cmdvel_gui",
+            #     node_executable="cmdvel_gui",
+            #     node_name="cmdvel_gui",
+            #     output="screen",
+            # ),
         ]
     )
 

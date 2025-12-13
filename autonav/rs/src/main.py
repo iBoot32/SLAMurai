@@ -73,7 +73,7 @@ def main():
     rclpy.init()
 
     port = '/dev/ttyACM0'
-    baud = 250000
+    baud = 115200
     hz = 50.0
 
     ser = serial.Serial(port=port, baudrate=baud, timeout=0.01)
