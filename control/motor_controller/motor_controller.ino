@@ -4,7 +4,7 @@
 #define DISABLE_ALL_STEPPERS 0
 
 // Robot params
-#define WHEEL_RADIUS_M 0.03665
+#define WHEEL_RADIUS_M 0.03594
 #define ROBOT_CENTER_TO_WHEEL_RADIUS 0.131
 #define STEPS_PER_REV 800
 #define STEPS_PER_SEC_MAX 3750 / 4.0
@@ -78,12 +78,12 @@ void setup() {
 }
 
 // -------- CMD_VEL READ --------
-float CMD_VEL_READ_HZ = 20.0;
+float CMD_VEL_READ_HZ = 40.0;
 float CMD_VEL_READ_PERIOD_US = 1e6 * (1 / CMD_VEL_READ_HZ);
 unsigned long last_cmd_vel_send_time = 0;
 
 // -------- ODOM --------
-float ODOM_SEND_HZ = 50.0; 
+float ODOM_SEND_HZ = 40.0; 
 float ODOM_SEND_PERIOD_US = 1e6 * (1 / ODOM_SEND_HZ);
 float pose_x = 0, pose_y = 0, pose_yaw = 0;
 long lastX = 0, lastY = 0, lastZ = 0, lastA = 0;
@@ -151,10 +151,10 @@ void loop() {
     float y_mm = roundf(pose_y * 1000.0f) / 1000.0f;
     float yaw_r = roundf(pose_yaw * 1000.0f) / 1000.0f;
 
-    // Accurate to 1cm and 0.5 deg
-    Serial.print(x_mm, 2);
+    // Accurate to 1mm and 0.5 deg
+    Serial.print(x_mm, 3);
     Serial.print(',');
-    Serial.print(y_mm, 2);
+    Serial.print(y_mm, 3);
     Serial.print(',');
     Serial.println(yaw_r, 2);
   }
