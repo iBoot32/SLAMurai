@@ -40,7 +40,7 @@ struct Stepper {
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(50); // zero accel
+    drv.setRampLen(35); // quick accel for smoothing
     drv.setSpeed(0); // zero initial speed
   }
 
@@ -53,7 +53,7 @@ struct Stepper {
     drv.setSpeedSteps(steps10);
 
     if (sps == 0) {
-      drv.rotate(0); // Stop
+      drv.setSpeedSteps(0);   // ramp down to stop
     } else if (sps > 0) {
       drv.rotate(1); // Forward at speed
     } else {
