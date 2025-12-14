@@ -7,7 +7,7 @@
 #define WHEEL_RADIUS_M 0.03594
 #define ROBOT_CENTER_TO_WHEEL_RADIUS 0.1268
 #define STEPS_PER_REV 800
-#define STEPS_PER_SEC_MAX 3750 / 4.0
+#define STEPS_PER_SEC_MAX 8000 / 4.0
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
 // ------- cmd_vel parser --------

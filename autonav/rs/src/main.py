@@ -65,6 +65,16 @@ class CmdVelSerialOdom(Node):
         msg.pose.pose.orientation.y = 0.0
         msg.pose.pose.orientation.z = qz
         msg.pose.pose.orientation.w = qw
+        
+        # 5mm std pose, 0.1deg std orientation
+        msg.pose.covariance = [
+            2.5e-05, 0.0,     0.0,     0.0,     0.0,     0.0,
+            0.0,     2.5e-05, 0.0,     0.0,     0.0,     0.0,
+            0.0,     0.0,     1.0,     0.0,     0.0,     0.0,
+            0.0,     0.0,     0.0,     1.0,     0.0,     0.0,
+            0.0,     0.0,     0.0,     0.0,     1.0,     0.0,
+            0.0,     0.0,     0.0,     0.0,     0.0,     3.05e-06
+        ]
 
         self.publisher.publish(msg)
 
