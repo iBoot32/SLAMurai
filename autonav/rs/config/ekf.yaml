@@ -14,7 +14,7 @@ ekf_filter_node:
                   false, false, false,      # vx vy vz 
                   false, false, true,         # vroll vpitch vyaw
                   true, true, false]         # ax ay az
-    imu0_remove_gravitational_acceleration: false # gravity is removed in madgwick filter
+    imu0_remove_gravitational_acceleration: true
     
     # Odometry is given by motor ticks because system is open-loop due to using stepper motors 
     odom0: /odometry/raw

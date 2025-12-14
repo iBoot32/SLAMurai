@@ -220,11 +220,10 @@ public:
     this->declare_parameter<bool>("use_magnetometer", false);
     this->declare_parameter<bool>("publish_tf", false);
     this->declare_parameter<double>("beta", 0.2);
-    this->declare_parameter<bool>("remove_gravity", true);
-    this->declare_parameter<double>("bias_x", -0.001140);
-    this->declare_parameter<double>("bias_y", 0.14651);
-    this->declare_parameter<double>("bias_z", 0.163);
-
+    this->declare_parameter<bool>("remove_gravity", false);
+    this->declare_parameter<double>("bias_x", 0.0);
+    this->declare_parameter<double>("bias_y", 0.0);
+    this->declare_parameter<double>("bias_z", 0.0);
 
     imu_topic_ = this->get_parameter("imu_topic").as_string();
     mag_topic_ = this->get_parameter("mag_topic").as_string();
@@ -342,25 +341,6 @@ private:
         }
     }
 
-    // remove gravity vector from imu linear accel
-    if (remove_gravity_) {
-      auto q = filter_.getQuaternion();
-      double qw = q[0], qx = q[1], qy = q[2], qz = q[3];
-
-      // Rotate gravity vector (0,0,9.81) into sensor frame
-      double up_x = 2.0*(qx*qz - qw*qy);
-      double up_y = 2.0*(qw*qx + qy*qz);
-      double up_z = (qw*qw - qx*qx - qy*qy + qz*qz);
-
-      double g_x = up_x * 9.8067;
-      double g_y = up_y * 9.8067;
-      double g_z = up_z * 9.8067;
-
-      ax -= g_x;
-      ay -= g_y;
-      az -= g_z;
-    }
-
     // Correct for IMU bias
     ax -= bias_x_;
     ay -= bias_y_;
@@ -380,13 +360,26 @@ private:
     out.orientation.y = q[2];
     out.orientation.z = q[3];
 
-    out.angular_velocity = msg->angular_velocity;
+    out.angular_velocity.x = gx;
+    out.angular_velocity.y = gy;
+    out.angular_velocity.z = gz;
+
     if (remove_gravity_) {
-      out.linear_acceleration.x = ax;
-      out.linear_acceleration.y = ay;
-      out.linear_acceleration.z = az;
+        double qw = q[0], qx = q[1], qy = q[2], qz = q[3];
+
+        // Expected gravity in sensor frame (based on estimated orientation)
+        double up_x = 2.0*(qx*qz - qw*qy);
+        double up_y = 2.0*(qw*qx + qy*qz);
+        double up_z = (qw*qw - qx*qx - qy*qy + qz*qz);
+
+        // Subtract 1g (approx 9.81 m/s^2)
+        out.linear_acceleration.x = ax - (up_x * 9.8067);
+        out.linear_acceleration.y = ay - (up_y * 9.8067);
+        out.linear_acceleration.z = az - (up_z * 9.8067);
     } else {
-      out.linear_acceleration = msg->linear_acceleration;
+        out.linear_acceleration.x = ax;
+        out.linear_acceleration.y = ay;
+        out.linear_acceleration.z = az;
     }
 
     // angular/linear covariances
