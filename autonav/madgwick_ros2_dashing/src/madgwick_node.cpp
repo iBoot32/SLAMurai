@@ -389,20 +389,24 @@ private:
       out.linear_acceleration = msg->linear_acceleration;
     }
 
-    // Copy angular/linear covariances
-    out.angular_velocity_covariance = msg->angular_velocity_covariance;
-    out.linear_acceleration_covariance = msg->linear_acceleration_covariance;
-   
-    // Orientation covariances experimentally determined
-    out.orientation_covariance[0] = 2.62198157e-04;
-    out.orientation_covariance[1] = -7.88885194e-06;
-    out.orientation_covariance[2] = 0.0;
-    out.orientation_covariance[3] = -7.88885194e-06;
-    out.orientation_covariance[4] = 2.51064521e-07;
-    out.orientation_covariance[5] = 0.0;
-    out.orientation_covariance[6] = 0.0;
-    out.orientation_covariance[7] = 0.0;
-    out.orientation_covariance[8] = 0.0;
+    // angular/linear covariances
+    out.angular_velocity_covariance = {
+      7.32e-06, 0.0,      0.0,
+      0.0,      1.51e-04, 0.0,
+      0.0,      0.0,      3.69e-06
+    };
+    out.linear_acceleration_covariance = {
+      2.86e-03, 0.0,      0.0,
+      0.0,      1.81e-03, 0.0,
+      0.0,      0.0,      1.01e-03
+    };
+
+    // Orientation covariances
+    out.orientation_covariance = {
+      3.046e-4, 0.0,      0.0,
+      0.0,      3.046e-4, 0.0,
+      0.0,      0.0,      2.741e-3
+    };
 
     pub_->publish(out);
 
