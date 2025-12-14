@@ -14,14 +14,5 @@ slam_toolbox:
     minimum_travel_distance: 0.05
     minimum_travel_heading: 0.05
     max_laser_range: 4.0
-    min_laser_range: 0.05
-
-    scan_buffer_size: 10
-    scan_buffer_maximum_scan_distance: 0.50    # old or far-away scans thrown out quickly
-    correlation_search_space_dimension: 0.50   # 50 cm total window
-    coarse_search_angle_offset: 0.17           # ~10 deg
-    distance_variance_penalty: 999999999.0
-    angle_variance_penalty: 2.0
-
-    use_response_expansion: false
+    min_laser_range: 0.01
 

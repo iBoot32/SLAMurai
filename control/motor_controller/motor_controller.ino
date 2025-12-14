@@ -5,12 +5,12 @@
 
 // Robot params
 #define WHEEL_RADIUS_M 0.03594
-#define ROBOT_CENTER_TO_WHEEL_RADIUS 0.131
+#define ROBOT_CENTER_TO_WHEEL_RADIUS 0.1268
 #define STEPS_PER_REV 800
 #define STEPS_PER_SEC_MAX 3750 / 4.0
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
-// ------- cmd_vel Parser --------
+// ------- cmd_vel parser --------
 bool read_line_float(float* out) {
   static char rxbuf[64];
   static uint8_t rxlen = 0;
@@ -36,14 +36,13 @@ struct Stepper {
   MoToStepper drv;
   uint8_t _stepPin, _dirPin;
   Stepper(uint8_t step, uint8_t dir) : drv(STEPS_PER_REV, STEPDIR), _stepPin(step), _dirPin(dir) {}
+  inline long pos() const { return drv.readSteps(); }
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(0); // No accel
-    drv.setSpeed(0); // Initial speed
+    drv.setRampLen(0); // zero accel
+    drv.setSpeed(0); // zero initial speed
   }
-
-  inline long pos() const { return drv.readSteps(); }
 
   void setLinearVelocity(float v_mps) {
     float sps = v_mps * STEPS_PER_M;
@@ -77,26 +76,24 @@ void setup() {
   stepperX.setup(); stepperY.setup(); stepperZ.setup(); stepperA.setup();
 }
 
-// -------- CMD_VEL READ --------
-float CMD_VEL_READ_HZ = 40.0;
-float CMD_VEL_READ_PERIOD_US = 1e6 * (1 / CMD_VEL_READ_HZ);
+// -------- CMD_VEL READING --------
+float CMD_VEL_READ_PERIOD_US = 1e6 * (1 / 40.0);
 unsigned long last_cmd_vel_send_time = 0;
 
-// -------- ODOM --------
-float ODOM_SEND_HZ = 40.0; 
-float ODOM_SEND_PERIOD_US = 1e6 * (1 / ODOM_SEND_HZ);
+// -------- ODOM SENDING --------
+float ODOM_SEND_PERIOD_US = 1e6 * (1 / 40.0);
 float pose_x = 0, pose_y = 0, pose_yaw = 0;
 long lastX = 0, lastY = 0, lastZ = 0, lastA = 0;
 unsigned long last_odom_send_time = 0;
 
 void loop() {
-  // ---- CMD_VEL PARSING AT SPECIFIED HZ ----
+  // Parse cmd_vel at specified hz
   unsigned long now = micros();
   if (now - last_cmd_vel_send_time >= CMD_VEL_READ_PERIOD_US) {
     last_cmd_vel_send_time = now;
-    float cmd_v[3];
 
     // Inverse kinematics (body twist -> motor vel)
+    float cmd_v[3];
     if (read_line_float(cmd_v)) {
       float vx = cmd_v[0], vy = cmd_v[1], w = cmd_v[2];
       float vX = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);

@@ -1,4 +1,8 @@
 {
+    "aux-param-autoexposure-setpoint": "400",
+    "aux-param-depthclampmax": "65535",
+    "aux-param-depthclampmin": "0",
+    "aux-param-disparityshift": "0",
     "ignoreSAD": "0",
     "param-censusenablereg-udiameter": "9",
     "param-censusenablereg-vdiameter": "9",
