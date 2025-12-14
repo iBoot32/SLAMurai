@@ -40,7 +40,7 @@ struct Stepper {
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(0); // zero accel
+    drv.setRampLen(50); // zero accel
     drv.setSpeed(0); // zero initial speed
   }
 
