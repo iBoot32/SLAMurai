@@ -17,7 +17,7 @@ configurable_parameters = [
     {'name': 'json_file_path', 'default': "''", 'description': 'allows advanced configuration'},
     {'name': 'log_level', 'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
     {'name': 'output', 'default': 'screen', 'description': 'pipe node output [screen|log]'},
-    {'name': 'depth_width', 'default': '640', 'description': 'depth image width'},
+    {'name': 'depth_width', 'default': '848', 'description': 'depth image width'},
     {'name': 'depth_height', 'default': '480', 'description': 'depth image height'},
     {'name': 'enable_depth', 'default': 'true', 'description': 'enable depth stream'},
     {'name': 'color_width', 'default': '640', 'description': 'color image width'},
@@ -108,6 +108,13 @@ def generate_launch_description():
     urdf_file = os.path.join(rs_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(rs_share_dir, 'params', 'slam_toolbox.yaml')
 
+    # Use medium profile json for realsense
+    json_config_path = os.path.join(rs_share_dir, 'config', 'medium_profile.json')
+    for param in configurable_parameters:
+        if param['name'] == 'json_file_path':
+            param['default'] = json_config_path
+            break
+
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
             DeclareLaunchArgument('output', default_value='screen', description='Output mode'),
@@ -161,7 +168,7 @@ def generate_launch_description():
                 ],
                 parameters=[{
                     'output_frame': 'lidar_link',
-                    'range_min': 0.05,
+                    'range_min': 0.01,
                     'range_max': 4.0,
                     'scan_height': 10,
                 }]
