@@ -13,6 +13,6 @@ slam_toolbox:
     use_scan_matching: false
     minimum_travel_distance: 0.3
     minimum_travel_heading: 0.2
-    max_laser_range: 4.0
+    max_laser_range: 5.5
     min_laser_range: 0.01
 
