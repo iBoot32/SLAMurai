@@ -55,7 +55,7 @@ configurable_parameters = [
     {'name': 'enable_sync', 'default': 'false', 'description': ''},
     {'name': 'align_depth', 'default': 'false', 'description': ''},
     {'name': 'filters', 'default': "'disparity,spatial,temporal,decimation'", 'description': ''},
-    {'name': 'clip_distance', 'default': '4.0', 'description': ''},
+    {'name': 'clip_distance', 'default': '5.5', 'description': ''},
     {'name': 'linear_accel_cov', 'default': '0.01', 'description': ''},
     {'name': 'initial_reset', 'default': 'false', 'description': ''},
     {'name': 'allow_no_texture_points', 'default': 'true', 'description': ''},
@@ -171,7 +171,7 @@ def generate_launch_description():
                 parameters=[{
                     'output_frame': 'lidar_link',
                     'range_min': 0.01,
-                    'range_max': 4.0,
+                    'range_max': 5.5,
                     'scan_height': 10,
                 }]
             ),
