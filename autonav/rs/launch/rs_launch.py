@@ -1,8 +1,9 @@
 import os
 from launch import LaunchDescription
 import launch_ros.actions
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
 # Your configurable parameters list
@@ -109,6 +110,8 @@ def generate_launch_description():
     ekf_config_path = os.path.join(rs_share_dir, 'config', 'ekf.yaml')
     urdf_file = os.path.join(rs_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(rs_share_dir, 'params', 'slam_toolbox.yaml')
+    nav2_params_path = os.path.join(rs_share_dir, 'launch', 'nav2_params.yaml')
+
 
     # Use medium profile json for realsense
     json_config_path = os.path.join(rs_share_dir, 'config', 'medium_profile.json')
@@ -116,6 +119,22 @@ def generate_launch_description():
         if param['name'] == 'json_file_path':
             param['default'] = json_config_path
             break
+
+    # Nav2 launching using bringup
+    nav2_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('nav2_bringup'),
+                'launch',
+                'bringup_launch.py'
+            )
+        ),
+        launch_arguments={
+            'use_sim_time': 'false',
+            'autostart': 'true',
+            'params_file': nav2_params_path,
+        }.items()
+    )
 
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
@@ -176,20 +195,15 @@ def generate_launch_description():
                 }]
             ),
 
-            launch_ros.actions.Node(
-                package="slam_toolbox",
-                node_executable="async_slam_toolbox_node",
-                node_name="slam_toolbox",
-                output="screen",
-                parameters=[toolbox_params_path],
-            ),
-
             # launch_ros.actions.Node(
-            #     package="cmdvel_gui",
-            #     node_executable="cmdvel_gui",
-            #     node_name="cmdvel_gui",
+            #     package="slam_toolbox",
+            #     node_executable="async_slam_toolbox_node",
+            #     node_name="slam_toolbox",
             #     output="screen",
+            #     parameters=[toolbox_params_path],
             # ),
+
+            # nav2_launch,
         ]
     )
 
