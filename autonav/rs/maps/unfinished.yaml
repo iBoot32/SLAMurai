@@ -1,4 +1,4 @@
-image: my_map.pgm
+image: unfinished.pgm
 mode: trinary
 resolution: 0.05
 origin: [-4.97, -1.82, 0]
