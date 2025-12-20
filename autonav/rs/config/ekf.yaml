@@ -12,8 +12,8 @@ ekf_filter_node:
     imu0_config: [false, false, false,      # x y z
                   false, false, false,         # roll pitch yaw
                   false, false, false,      # vx vy vz 
-                  false, false, true,         # vroll vpitch vyaw
-                  true, true, false]         # ax ay az
+                  false, false, false,         # vroll vpitch vyaw
+                  false, false, false]         # ax ay az
     imu0_remove_gravitational_acceleration: true
     
     # Odometry is given by motor ticks because system is open-loop due to using stepper motors 
