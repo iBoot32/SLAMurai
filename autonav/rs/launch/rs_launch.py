@@ -110,8 +110,9 @@ def generate_launch_description():
     ekf_config_path = os.path.join(rs_share_dir, 'config', 'ekf.yaml')
     urdf_file = os.path.join(rs_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(rs_share_dir, 'params', 'slam_toolbox.yaml')
-    nav2_params_path = os.path.join(rs_share_dir, 'launch', 'nav2_params.yaml')
-
+    nav2_params_path = os.path.join(rs_share_dir, 'params', 'nav2_params.yaml')
+    map_path = os.path.join(rs_share_dir, 'maps', 'full.yaml')
+    bt = os.path.join(rs_share_dir, 'params', 'nav_w_recovery.xml')
 
     # Use medium profile json for realsense
     json_config_path = os.path.join(rs_share_dir, 'config', 'medium_profile.json')
@@ -126,13 +127,15 @@ def generate_launch_description():
             os.path.join(
                 get_package_share_directory('nav2_bringup'),
                 'launch',
-                'bringup_launch.py'
+                'nav2_bringup_launch.py'
             )
         ),
         launch_arguments={
             'use_sim_time': 'false',
             'autostart': 'true',
-            'params_file': nav2_params_path,
+            'params': nav2_params_path,
+            'bt_xml_file': bt,
+            'map': map_path,
         }.items()
     )
 
@@ -203,7 +206,7 @@ def generate_launch_description():
             #     parameters=[toolbox_params_path],
             # ),
 
-            # nav2_launch,
+            nav2_launch,
         ]
     )
 
