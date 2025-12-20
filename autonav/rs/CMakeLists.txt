@@ -13,7 +13,7 @@ install(
 
 # Install directories
 install(
-  DIRECTORY launch params urdf config
+  DIRECTORY launch params urdf config maps
   DESTINATION share/${PROJECT_NAME}/
 )
 
