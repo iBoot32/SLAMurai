@@ -130,7 +130,7 @@ global_costmap:
       robot_radius: 0.14
       inflation_layer:
         inflation_radius: 0.8
-        cost_scaling_factor: 3.0
+        cost_scaling_factor: 4.0
       obstacle_layer:
         enabled: True
       static_layer:

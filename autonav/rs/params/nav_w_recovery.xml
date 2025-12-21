@@ -1,21 +1,32 @@
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <RecoveryNode number_of_retries="6">
-      <Sequence name="NavigateWithReplanning">
-        <RateController hz="1.0">
-          <Fallback>
-            <GoalReached/>
-             <ComputePathToPose goal="${goal}" path="${path}"/>
-          </Fallback>
-        </RateController>
-        <FollowPath path="${path}"/>
-      </Sequence>
-      <SequenceStar name="RecoveryActions">
-        <ClearEntireCostmap service_name="/local_costmap/clear_entirely_local_costmap"/>
-        <ClearEntireCostmap service_name="/global_costmap/clear_entirely_global_costmap"/>
-        <Spin/>
-        <BackUp backup_dist="0.15" backup_speed="0.025"/>
-      </SequenceStar>
+    <RecoveryNode number_of_retries="2" name="HardRecovery">
+      
+      <RecoveryNode number_of_retries="4" name="SoftRecovery">
+        
+        <RecoveryNode number_of_retries="3" name="DetourRecovery">
+          
+          <Sequence name="NavigateWithReplanning">
+            <RateController hz="1.0">
+              <Fallback>
+                <GoalReached/>
+                <ComputePathToPose goal="${goal}" path="${path}"/>
+              </Fallback>
+            </RateController>
+            <FollowPath path="${path}"/>
+          </Sequence>
+
+          <Spin/>
+        
+        </RecoveryNode>
+        <Sequence name="ClearMaps">
+           <ClearEntireCostmap service_name="/local_costmap/clear_entirely_local_costmap"/>
+           <ClearEntireCostmap service_name="/global_costmap/clear_entirely_global_costmap"/>
+        </Sequence>
+      
+      </RecoveryNode>
+      <BackUp backup_dist="0.15" backup_speed="0.025"/>
+    
     </RecoveryNode>
   </BehaviorTree>
 </root>
