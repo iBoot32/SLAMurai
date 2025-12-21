@@ -5,6 +5,11 @@
 This project is an open-source implementation of a SLAM (Simultaneous Localization and Mapping) robot.
 All CAD and software is contained within this repo.
 
+## Requiremment Check
+- [ ] Omnidirectional movement using 4 dual-layer omniwheels
+- [x] Report odommetry accurate to 3cm at 8ft range
+  - Last test: 12/20/2025 with 0.5% error in forward odom, within 3% error for side movement when moving 8ft straight. And 3cm laoff-center drift when doing pure diagonal
+
 ## Features
 
 - Real-time mapping
