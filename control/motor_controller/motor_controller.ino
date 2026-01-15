@@ -62,10 +62,10 @@ struct Stepper {
   }
 };
 
-Stepper stepperX(2, 5);
-Stepper stepperY(4, 7);
-Stepper stepperZ(12, 13);
-Stepper stepperA(3, 6);
+Stepper stepperFront(3, 6);
+Stepper stepperLeft(2, 5);
+Stepper stepperBack(4, 7);
+Stepper stepperRight(12, 13);
 
 void setup() {
   Serial.begin(115200);
@@ -73,7 +73,7 @@ void setup() {
   if (DISABLE_ALL_STEPPERS) { digitalWrite(ENABLE_PIN, HIGH); return; }
   digitalWrite(ENABLE_PIN, LOW);
   delayMicroseconds(2000);
-  stepperX.setup(); stepperY.setup(); stepperZ.setup(); stepperA.setup();
+  stepperFront.setup(); stepperLeft.setup(); stepperBack.setup(); stepperRight.setup();
 }
 
 // -------- CMD_VEL READING --------
@@ -83,7 +83,7 @@ unsigned long last_cmd_vel_send_time = 0;
 // -------- ODOM SENDING --------
 float ODOM_SEND_PERIOD_US = 1e6 * (1 / 40.0);
 float pose_x = 0, pose_y = 0, pose_yaw = 0;
-long lastX = 0, lastY = 0, lastZ = 0, lastA = 0;
+long lastFront = 0, lastLeft = 0, lastBack = 0, lastRight = 0;
 unsigned long last_odom_send_time = 0;
 
 void loop() {
@@ -96,41 +96,41 @@ void loop() {
     float cmd_v[3];
     if (read_line_float(cmd_v)) {
       float vx = cmd_v[0], vy = cmd_v[1], w = cmd_v[2];
-      float vX = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vY =  (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vZ =  (vy - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vA = -(vx + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-  
-      stepperX.setLinearVelocity(vX);
-      stepperY.setLinearVelocity(vY);
-      stepperZ.setLinearVelocity(vZ);
-      stepperA.setLinearVelocity(vA);
+      float vFront = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+      float vLeft =   (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+      float vBack =   (vy - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+      float vRight = -(vx + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
+   
+      stepperFront.setLinearVelocity(vFront);
+      stepperLeft.setLinearVelocity(vLeft);
+      stepperBack.setLinearVelocity(vBack);
+      stepperRight.setLinearVelocity(vRight);
     }
   }
 
   // ---- ODOM UPDATE ----
-  long pX = stepperX.pos();
-  long pY = stepperY.pos();
-  long pZ = stepperZ.pos();
-  long pA = stepperA.pos();
+  long pFront = stepperFront.pos();
+  long pLeft = stepperLeft.pos();
+  long pBack = stepperBack.pos();
+  long pRight = stepperRight.pos();
 
   // Motor tick deltas
-  long dX = pX - lastX;
-  long dY = pY - lastY;
-  long dZ = pZ - lastZ;
-  long dA = pA - lastA;
-  lastX = pX; lastY = pY; lastZ = pZ; lastA = pA;
+  long dFront = pFront - lastFront;
+  long dLeft = pLeft - lastLeft;
+  long dBack = pBack - lastBack;
+  long dRight = pRight - lastRight;
+  lastFront = pFront; lastLeft = pLeft; lastBack = pBack; lastRight = pRight;
 
   // Motor tick delta to meter deltas
-  float sX = dX / STEPS_PER_M;
-  float sY = dY / STEPS_PER_M;
-  float sZ = dZ / STEPS_PER_M;
-  float sA = dA / STEPS_PER_M;
+  float sFront = dFront / STEPS_PER_M;
+  float sLeft = dLeft / STEPS_PER_M;
+  float sBack = dBack / STEPS_PER_M;
+  float sRight = dRight / STEPS_PER_M;
 
   // Forward kinematics (stepper deltas to world pose)
-  float dx_b = ( sY - sA ) * 0.5f;
-  float dy_b = (-sX + sZ ) * 0.5f;
-  float dyaw = -(sX + sY + sZ + sA) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
+  float dx_b = ( sLeft - sRight ) * 0.5f;
+  float dy_b = (-sFront + sBack ) * 0.5f;
+  float dyaw = -(sFront + sLeft + sBack + sRight) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
 
   // Integrate into world frame
   float cy = cos(pose_yaw);
