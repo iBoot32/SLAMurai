@@ -20,7 +20,7 @@ configurable_parameters = [
     {'name': 'output', 'default': 'screen', 'description': 'pipe node output [screen|log]'},
     {'name': 'depth_width', 'default': '640', 'description': 'depth image width'},
     {'name': 'depth_height', 'default': '480', 'description': 'depth image height'},
-    {'name': 'enable_depth', 'default': 'true', 'description': 'enable depth stream'},
+    {'name': 'enable_depth', 'default': 'false', 'description': 'enable depth stream'},
     {'name': 'color_width', 'default': '640', 'description': 'color image width'},
     {'name': 'color_height', 'default': '480', 'description': 'color image height'},
     {'name': 'enable_color', 'default': 'true', 'description': 'enable color stream'},
@@ -139,6 +139,19 @@ def generate_launch_description():
         }.items()
     )
 
+    rplidar_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('rplidar_ros'),
+                'launch',
+                'rplidar_a1_launch.py'
+            )
+        ),
+        launch_arguments={
+            'frame_id': 'lidar_link',
+        }.items()
+    )
+
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
             DeclareLaunchArgument('output', default_value='screen', description='Output mode'),
@@ -181,22 +194,22 @@ def generate_launch_description():
             ),
 
             # Laserscan from realsense stereo camera
-            launch_ros.actions.Node(
-                package='depthimage_to_laserscan',
-                node_executable='depthimage_to_laserscan_node',
-                node_name='depthimage_to_laserscan',
-                remappings=[
-                    ('depth', '/camera/depth/image_rect_raw'),
-                    ('depth_camera_info', '/camera/depth/camera_info'),
-                    ('scan', '/scan'),
-                ],
-                parameters=[{
-                    'output_frame': 'lidar_link',
-                    'range_min': 0.01,
-                    'range_max': 5.5,
-                    'scan_height': 10,
-                }]
-            ),
+            # launch_ros.actions.Node(
+            #     package='depthimage_to_laserscan',
+            #     node_executable='depthimage_to_laserscan_node',
+            #     node_name='depthimage_to_laserscan',
+            #     remappings=[
+            #         ('depth', '/camera/depth/image_rect_raw'),
+            #         ('depth_camera_info', '/camera/depth/camera_info'),
+            #         ('scan', '/scan'),
+            #     ],
+            #     parameters=[{
+            #         'output_frame': 'lidar_link',
+            #         'range_min': 0.01,
+            #         'range_max': 5.5,
+            #         'scan_height': 10,
+            #     }]
+            # ),
 
             # launch_ros.actions.Node(
             #     package="slam_toolbox",
@@ -205,6 +218,8 @@ def generate_launch_description():
             #     output="screen",
             #     parameters=[toolbox_params_path],
             # ),
+
+            rplidar_launch,
 
             nav2_launch,
         ]
