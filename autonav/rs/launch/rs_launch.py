@@ -149,6 +149,10 @@ def generate_launch_description():
         ),
         launch_arguments={
             'frame_id': 'lidar_link',
+            'scan_mode': 'standard',
+            'angle_min': '-3.14159265',
+            'angle_max': '3.14159265',
+            'angle_compensate': 'false',
         }.items()
     )
 
@@ -211,17 +215,17 @@ def generate_launch_description():
             #     }]
             # ),
 
-            # launch_ros.actions.Node(
-            #     package="slam_toolbox",
-            #     node_executable="async_slam_toolbox_node",
-            #     node_name="slam_toolbox",
-            #     output="screen",
-            #     parameters=[toolbox_params_path],
-            # ),
+            launch_ros.actions.Node(
+                package="slam_toolbox",
+                node_executable="async_slam_toolbox_node",
+                node_name="slam_toolbox",
+                output="screen",
+                parameters=[toolbox_params_path],
+            ),
 
             rplidar_launch,
 
-            nav2_launch,
+            # nav2_launch,
         ]
     )
 
