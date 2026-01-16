@@ -42,7 +42,7 @@
   <link name="lidar_link">
     <visual>
       <geometry>
-        <cylinder radius="0.3" length="0.01"/>
+        <cylinder radius="0.03" length="0.01"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <material name="grey">
@@ -54,7 +54,7 @@
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0.0 0 0.09" rpy="0.0 0 0"/> <!-- Realsense is upside down on robot -->
+    <origin xyz="0.0 0 0.05" rpy="0.0 0 3.14159"/>
   </joint>
 
   
