@@ -152,7 +152,7 @@ def generate_launch_description():
             'scan_mode': 'standard',
             'angle_min': '-3.14159265',
             'angle_max': '3.14159265',
-            'angle_compensate': 'false',
+            'angle_compensate': 'true',
         }.items()
     )
 
