@@ -253,7 +253,7 @@ class SLlidarNode : public rclcpp::Node
         size_t expected =
             static_cast<size_t>(
                 std::round((scan_msg->angle_max - scan_msg->angle_min) /
-                           scan_msg->angle_increment)) + 1;
+                           scan_msg->angle_increment));
 
         if (scan_msg->ranges.size() > expected) {
             scan_msg->ranges.resize(expected);
