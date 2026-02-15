@@ -111,7 +111,7 @@ def generate_launch_description():
     urdf_file = os.path.join(rs_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(rs_share_dir, 'params', 'slam_toolbox.yaml')
     nav2_params_path = os.path.join(rs_share_dir, 'params', 'nav2_params.yaml')
-    map_path = os.path.join(rs_share_dir, 'maps', 'fullv2.yaml')
+    map_path = os.path.join(rs_share_dir, 'maps', 'firstfloor_360.yaml')
     bt = os.path.join(rs_share_dir, 'params', 'nav_w_recovery.xml')
 
     # Use medium profile json for realsense
@@ -215,17 +215,17 @@ def generate_launch_description():
             #     }]
             # ),
 
-            launch_ros.actions.Node(
-                package="slam_toolbox",
-                node_executable="async_slam_toolbox_node",
-                node_name="slam_toolbox",
-                output="screen",
-                parameters=[toolbox_params_path],
-            ),
+            # launch_ros.actions.Node(
+            #     package="slam_toolbox",
+            #     node_executable="async_slam_toolbox_node",
+            #     node_name="slam_toolbox",
+            #     output="screen",
+            #     parameters=[toolbox_params_path],
+            # ),
 
             rplidar_launch,
 
-            # nav2_launch,
+            nav2_launch,
         ]
     )
 
