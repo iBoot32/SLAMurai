@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>slamurai_nav</name>
+  <version>0.0.1</version>
+  <description>Autonavigation software for my autonomous omni robot</description>
+
+  <maintainer email="tkodonne@purdue.edu">Your Name</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
+  <exec_depend>robot_localization</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
