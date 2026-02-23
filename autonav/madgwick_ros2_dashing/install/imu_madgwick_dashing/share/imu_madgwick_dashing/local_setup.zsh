@@ -1,1 +1,0 @@
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/ament_cmake_environment_hooks/local_setup.zsh

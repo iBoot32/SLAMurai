@@ -1,9 +1,0 @@
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/install/strip.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/install.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/madgwick_node.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/uninstall.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/install/local.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/test.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/list_install_components.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/edit_cache.dir
-/home/purduerm/ros2_ws/src/SLAMurai/autonav/madgwick_ros2_dashing/build/imu_madgwick_dashing/CMakeFiles/rebuild_cache.dir
