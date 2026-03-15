@@ -40,24 +40,28 @@ struct Stepper {
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(5); // quick accel for smoothing
-    drv.setSpeed(0); // zero initial speed
+    drv.setRampLen(5);
+    drv.setSpeed(0);
   }
 
   void setLinearVelocity(float v_mps) {
     float sps = v_mps * STEPS_PER_M;
-    if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps); // Clamping
-    
-    // Convert to steps/10sec (integer) for MobaTools
-    int steps10 = abs(sps) * 10; 
+    if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps);
+    if (fabs(sps) < 1e-3) {
+      drv.rotate(0);
+      drv.setSpeedSteps(0);
+      return;
+    }
+
+    int steps10 = abs(sps) * 10;
     drv.setSpeedSteps(steps10);
 
     if (sps == 0) {
-      drv.setSpeedSteps(0);   // ramp down to stop
+      drv.setSpeedSteps(0);
     } else if (sps > 0) {
-      drv.rotate(1); // Forward at speed
+      drv.rotate(1);
     } else {
-      drv.rotate(-1); // Backward at speed
+      drv.rotate(-1);
     }
   }
 };
@@ -79,6 +83,8 @@ void setup() {
 // -------- CMD_VEL READING --------
 float CMD_VEL_READ_PERIOD_US = 1e6 * (1 / 40.0);
 unsigned long last_cmd_vel_send_time = 0;
+unsigned long last_cmd_received_time = 0;
+const unsigned long CMD_TIMEOUT_US = 500000;
 
 // -------- ODOM SENDING --------
 float ODOM_SEND_PERIOD_US = 1e6 * (1 / 40.0);
@@ -87,14 +93,15 @@ long lastFront = 0, lastLeft = 0, lastBack = 0, lastRight = 0;
 unsigned long last_odom_send_time = 0;
 
 void loop() {
-  // Parse cmd_vel at specified hz
   unsigned long now = micros();
+
   if (now - last_cmd_vel_send_time >= CMD_VEL_READ_PERIOD_US) {
     last_cmd_vel_send_time = now;
 
-    // Inverse kinematics (body twist -> motor vel)
     float cmd_v[3];
     if (read_line_float(cmd_v)) {
+      last_cmd_received_time = now;
+
       float vx = cmd_v[0], vy = cmd_v[1], w = cmd_v[2];
       float vFront = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
       float vLeft =   (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
@@ -108,38 +115,41 @@ void loop() {
     }
   }
 
+  // Stop if no command for 0.5 seconds
+  if (now - last_cmd_received_time > CMD_TIMEOUT_US) {
+    stepperFront.setLinearVelocity(0);
+    stepperLeft.setLinearVelocity(0);
+    stepperBack.setLinearVelocity(0);
+    stepperRight.setLinearVelocity(0);
+  }
+
   // ---- ODOM UPDATE ----
   long pFront = stepperFront.pos();
   long pLeft = stepperLeft.pos();
   long pBack = stepperBack.pos();
   long pRight = stepperRight.pos();
 
-  // Motor tick deltas
   long dFront = pFront - lastFront;
   long dLeft = pLeft - lastLeft;
   long dBack = pBack - lastBack;
   long dRight = pRight - lastRight;
   lastFront = pFront; lastLeft = pLeft; lastBack = pBack; lastRight = pRight;
 
-  // Motor tick delta to meter deltas
   float sFront = dFront / STEPS_PER_M;
   float sLeft = dLeft / STEPS_PER_M;
   float sBack = dBack / STEPS_PER_M;
   float sRight = dRight / STEPS_PER_M;
 
-  // Forward kinematics (stepper deltas to world pose)
   float dx_b = ( sLeft - sRight ) * 0.5f;
   float dy_b = (-sFront + sBack ) * 0.5f;
   float dyaw = -(sFront + sLeft + sBack + sRight) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
 
-  // Integrate into world frame
   float cy = cos(pose_yaw);
   float sy = sin(pose_yaw);
   pose_x += cy * dx_b - sy * dy_b;
   pose_y += sy * dx_b + cy * dy_b;
   pose_yaw += dyaw;
 
-  // ---- ODOM PUBLISH @ SPECIFIED HZ ----
   now = micros();
   if (now - last_odom_send_time >= ODOM_SEND_PERIOD_US) {
     last_odom_send_time = now;
@@ -148,7 +158,6 @@ void loop() {
     float y_mm = roundf(pose_y * 1000.0f) / 1000.0f;
     float yaw_r = roundf(pose_yaw * 1000.0f) / 1000.0f;
 
-    // Accurate to 1mm and 0.5 deg
     Serial.print(x_mm, 3);
     Serial.print(',');
     Serial.print(y_mm, 3);
