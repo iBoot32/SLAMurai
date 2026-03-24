@@ -53,13 +53,14 @@ controller_server:
     min_x_velocity_threshold: 0.01
     min_y_velocity_threshold: 0.01
     min_theta_velocity_threshold: 0.01
-    failure_tolerance: 1.0
-    progress_checker_plugin: "progress_checker"
+    failure_tolerance: -1.0
+    progress_checker_plugin: ""
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
 
 dwb_controller:
   ros__parameters:
+    controller_frequency: 10.0
     use_sim_time: False
     debug_trajectory_details: False
 
@@ -87,7 +88,7 @@ dwb_controller:
     vy_samples: 8
     vtheta_samples: 8
 
-    sim_time: 3.0              # longer horizon = smoother arcs
+    sim_time: 1.0
     linear_granularity: 0.03
     angular_granularity: 0.025
 
@@ -124,8 +125,8 @@ local_costmap:
       plugin_types: ["nav2_costmap_2d::ObstacleLayer", "nav2_costmap_2d::InflationLayer"]
 
       inflation_layer:
-        inflation_radius: 0.20
-        cost_scaling_factor: 5.0
+        inflation_radius: 0.25
+        cost_scaling_factor: 3.0
 
       obstacle_layer:
         enabled: True
