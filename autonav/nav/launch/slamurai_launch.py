@@ -149,7 +149,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'frame_id': 'lidar_link',
-            'scan_mode': 'standard',
+            'scan_mode': 'Sensitivity',
             'angle_min': '-3.14159265',
             'angle_max': '3.14159265',
             'angle_compensate': 'true',

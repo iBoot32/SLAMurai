@@ -13,7 +13,7 @@ def generate_launch_description():
     frame_id = LaunchConfiguration('frame_id', default='laser')
     inverted = LaunchConfiguration('inverted', default='false')
     angle_compensate = LaunchConfiguration('angle_compensate', default='true')
-    scan_mode = LaunchConfiguration('scan_mode', default='Standard')  # FIXED
+    scan_mode = LaunchConfiguration('scan_mode', default='Sensitivity')  # FIXED
 
     return LaunchDescription([
 
