@@ -142,9 +142,9 @@ def generate_launch_description():
     rplidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
-                get_package_share_directory('rplidar_ros'),
+                get_package_share_directory('sllidar_ros2'),
                 'launch',
-                'rplidar_a1_launch.py'
+                'sllidar_a1_launch.py'
             )
         ),
         launch_arguments={
