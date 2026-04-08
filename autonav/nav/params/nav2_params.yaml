@@ -13,7 +13,7 @@ amcl:
     do_beamskip: true
     global_frame_id: "map"
     lambda_short: 0.1
-    laser_likelihood_max_dist: 3.5
+    laser_likelihood_max_dist: 4.5
     laser_max_range: 6.0
     laser_min_range: -1.0
     laser_model_type: "likelihood_field"
@@ -94,7 +94,7 @@ dwb_controller:
     vy_samples: 8
     vtheta_samples: 8
 
-    sim_time: 1.0
+    sim_time: 3.0
     linear_granularity: 0.03
     angular_granularity: 0.025
 
@@ -102,12 +102,14 @@ dwb_controller:
     yaw_goal_tolerance: 3.14159
     transform_tolerance: 0.5
 
-    critics: ["BaseObstacle", "PathAlign", "PathDist", "GoalDist"]
+    critics: ["BaseObstacle", "PathAlign", "PathDist", "GoalDist", "Oscillation"]
 
     BaseObstacle.scale: 20.0
     PathAlign.scale: 10.0
     PathDist.scale: 20.0
     GoalDist.scale: 8.0
+    Oscillation.oscillation_reset_dist: 0.05
+    Oscillation.oscillation_reset_angle: 0.20
 
 bt_navigator:
   ros__parameters:
