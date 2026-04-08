@@ -71,11 +71,11 @@ dwb_controller:
     debug_trajectory_details: False
 
     # VERY SMOOTH SPEED LIMITS
-    min_vel_x: -0.20
-    max_vel_x: 0.20
-    min_vel_y: -0.20
-    max_vel_y: 0.20
-    max_speed_xy: 0.20
+    min_vel_x: -0.25
+    max_vel_x: 0.25
+    min_vel_y: -0.25
+    max_vel_y: 0.25
+    max_speed_xy: 0.25
     min_speed_xy: 0.02
 
     max_vel_theta: 0.6
