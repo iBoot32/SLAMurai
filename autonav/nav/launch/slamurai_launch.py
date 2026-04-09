@@ -13,7 +13,7 @@ configurable_parameters = [
     {'name': 'usb_port_id', 'default': "''", 'description': 'choose device by usb port id'},
     {'name': 'device_type', 'default': "''", 'description': 'choose device by type'},
     {'name': 'config_file', 'default': "''", 'description': 'yaml config file'},
-    {'name': 'enable_pointcloud', 'default': 'true', 'description': 'enable pointcloud'},
+    {'name': 'enable_pointcloud', 'default': 'false', 'description': 'enable pointcloud'},
     {'name': 'unite_imu_method', 'default': "'copy'", 'description': '[copy|linear_interpolation]'},
     {'name': 'json_file_path', 'default': "''", 'description': 'allows advanced configuration'},
     {'name': 'log_level', 'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
@@ -21,8 +21,8 @@ configurable_parameters = [
     {'name': 'depth_width', 'default': '640', 'description': 'depth image width'},
     {'name': 'depth_height', 'default': '480', 'description': 'depth image height'},
     {'name': 'enable_depth', 'default': 'false', 'description': 'enable depth stream'},
-    {'name': 'color_width', 'default': '640', 'description': 'color image width'},
-    {'name': 'color_height', 'default': '480', 'description': 'color image height'},
+    {'name': 'color_width', 'default': '424', 'description': 'color image width'},
+    {'name': 'color_height', 'default': '240', 'description': 'color image height'},
     {'name': 'enable_color', 'default': 'true', 'description': 'enable color stream'},
     {'name': 'infra_width', 'default': '-1', 'description': 'infra width'},
     {'name': 'infra_height', 'default': '-1', 'description': 'infra width'},
@@ -31,16 +31,16 @@ configurable_parameters = [
     {'name': 'infra_rgb', 'default': 'false', 'description': 'enable infra2 stream'},
     {'name': 'fisheye_width', 'default': '-1', 'description': 'fisheye width'},
     {'name': 'fisheye_height', 'default': '-1', 'description': 'fisheye width'},
-    {'name': 'enable_fisheye1', 'default': 'true', 'description': 'enable fisheye1 stream'},
-    {'name': 'enable_fisheye2', 'default': 'true', 'description': 'enable fisheye2 stream'},
+    {'name': 'enable_fisheye1', 'default': 'false', 'description': 'enable fisheye1 stream'},
+    {'name': 'enable_fisheye2', 'default': 'false', 'description': 'enable fisheye2 stream'},
     {'name': 'confidence_width', 'default': '-1', 'description': 'depth image width'},
     {'name': 'confidence_height', 'default': '-1', 'description': 'depth image height'},
-    {'name': 'enable_confidence', 'default': 'true', 'description': 'enable depth stream'},
+    {'name': 'enable_confidence', 'default': 'false', 'description': 'enable depth stream'},
     {'name': 'fisheye_fps', 'default': '-1.', 'description': ''},
     {'name': 'depth_fps', 'default': '15.', 'description': ''},
     {'name': 'confidence_fps', 'default': '-1.', 'description': ''},
     {'name': 'infra_fps', 'default': '-1.', 'description': ''},
-    {'name': 'color_fps', 'default': '15.', 'description': ''},
+    {'name': 'color_fps', 'default': '6.', 'description': ''},
     {'name': 'gyro_fps', 'default': '200.', 'description': ''},
     {'name': 'accel_fps', 'default': '200.', 'description': ''},
     {'name': 'color_qos', 'default': 'SYSTEM_DEFAULT', 'description': 'QoS profile name'},
@@ -55,7 +55,7 @@ configurable_parameters = [
     {'name': 'pointcloud_texture_index', 'default': '0', 'description': 'testure stream index for pointcloud'},
     {'name': 'enable_sync', 'default': 'false', 'description': ''},
     {'name': 'align_depth', 'default': 'false', 'description': ''},
-    {'name': 'filters', 'default': "'disparity,spatial,temporal,decimation'", 'description': ''},
+    {'name': 'filters', 'default': "''", 'description': ''},
     {'name': 'clip_distance', 'default': '5.5', 'description': ''},
     {'name': 'linear_accel_cov', 'default': '0.01', 'description': ''},
     {'name': 'initial_reset', 'default': 'false', 'description': ''},
@@ -156,6 +156,20 @@ def generate_launch_description():
         }.items()
     )
 
+    rosbridge_node = launch_ros.actions.Node(
+        package='rosbridge_server',
+        node_executable='rosbridge_websocket',
+        node_name='rosbridge_websocket',
+        output='screen'
+    )
+
+    web_video_node = launch_ros.actions.Node(
+        package='web_video_server',
+        node_executable='web_video_server',
+        node_name='web_video_server',
+        output='screen'
+    )
+
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
             DeclareLaunchArgument('output', default_value='screen', description='Output mode'),
@@ -199,6 +213,8 @@ def generate_launch_description():
 
             rplidar_launch,
             nav2_launch,
+            rosbridge_node,
+            web_video_node,
         ]
     )
 
