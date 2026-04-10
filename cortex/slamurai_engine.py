@@ -3,7 +3,6 @@ import cv2
 from collections import deque
 from datetime import datetime
 
-# --- CONFIGURATION ---
 VLM_MODEL = "SLAMurai" 
 
 class SLAMuraiEngine:
@@ -24,23 +23,23 @@ class SLAMuraiEngine:
         self.is_thinking = False
 
     def summarize_to_ltm(self):
-        # Taking the STM raw logs and asking for a distilled index entry
+        """Distills current STM into a single LTM entry to maintain long-term context."""
         stm_context = "\n".join(list(self.stm))
         prompt = (
             f"The current time is {datetime.now().strftime('%H:%M:%S')}. "
             f"TASK: Distill the following STM logs into a single 'Key Object Index' for LTM.\n"
             f"Focus on permanent architecture and furniture. Ignore transient objects.\n"
-            f"Format: [time window (x:x:x - y:y:y)] | Key: [objects] | Env: [room type]\n"
+            f"Format: [time window] | Key: [objects] | Env: [room type]\n"
             f"LOGS:\n{stm_context}"
         )
         try:
-            # think=False retained as requested
             response = ollama.generate(model=VLM_MODEL, prompt=prompt, think=False)
             self.ltm.append(response['response'].strip())
         except Exception as e:
             print(f"Summarizer Error: {e}")
 
     def think(self):
+        """Structured observation loop using the rigid 'Observer' prompt."""
         if self.state["last_frame"] is None: 
             return
         
@@ -48,15 +47,25 @@ class SLAMuraiEngine:
         vlm_input = cv2.resize(self.state["last_frame"], (640, 480)) 
         _, buffer = cv2.imencode('.jpg', vlm_input, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         
-        # EXACT prompt phrasing retained
+        # We place the rigid observation logic here so it only applies to routine scans
         prompt_body = (
-            f"### THE PAST (MEMORY ONLY - DO NOT REPEAT)\n"
+            f"STRICT RULE: YOU ARE A REAL-TIME OBSERVER. THE IMAGE IS TRUTH AND WHAT YOU SHOULD PAY ATTENTION TO.\n"
+            f"Memory tags (<ltm_archive> and <stm_log>) are for HISTORY AND RECALL ONLY.\n"
+            f"Never assume the environment matches your memory.\n\n"
+            f"### THE PAST (MEMORY)\n"
             f"<ltm_archive>\n{chr(10).join(list(self.ltm))}\n</ltm_archive>\n"
             f"<stm_log>\n{chr(10).join(list(self.stm))}\n</stm_log>\n\n"
-            f"### END THE PAST. THE PRESENT BELOW (ABSOLUTE TRUTH)\n"
+            f"### THE PRESENT (ABSOLUTE TRUTH)\n"
             f"Pose: {self.state['pose']}\n"
-            f"TASK: Observe CURRENT image. Do not hallucinate based on memory."
-            f"The current time is {datetime.now().strftime('%H:%M:%S')}. "
+            f"Time: {datetime.now().strftime('%H:%M:%S')}\n\n"
+            f"OUTPUT FORMAT (MANDATORY):\n"
+            f"[Current time] Pose [X, Y, Yaw]\n"
+            f"Objects: [object1(dist), object2(dist)...]\n"
+            f"Scene: [One single sentence describing the layout and room type.]\n\n"
+            f"Example:\n"
+            f"[12:00:00] Pose [0.0, 0.0, 0.0]\n"
+            f"Objects: chair(1.0m), desk(0.5m)\n"
+            f"Scene: A workspace with a desk and chair, likely a home office."
         )
         
         try:
@@ -67,15 +76,48 @@ class SLAMuraiEngine:
             self.stats["tokens_per_sec"] = resp.get('eval_count', 0) / eval_dur
             
             self.state["observation"] = resp['response'].strip()
+            # Store formatted observation in STM
             self.stm.append(self.state["observation"])
             
             self.summary_counter += 1
             if self.summary_counter >= self.STM_N:
                 self.summarize_to_ltm()
                 self.summary_counter = 0
-                self.ltm_counter = len(self.ltm) 
 
         except Exception as e: 
             print(f"Inference Error: {e}")
+        finally:
+            self.is_thinking = False
+
+    def chat(self, user_query):
+        """Simple chat mode. Bare instructions to allow natural responses."""
+        if self.state["last_frame"] is None:
+            return "Vision system not ready."
+
+        self.is_thinking = True
+        vlm_input = cv2.resize(self.state["last_frame"], (640, 480))
+        _, buffer = cv2.imencode('.jpg', vlm_input, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+
+        prompt_body = (
+            f"Current Time: {datetime.now().strftime('%H:%M:%S')}\n"
+            f"Current Pose: {self.state['pose']}\n\n"
+            f"### MEMORY LOGS\n"
+            f"LTM Archive:\n{chr(10).join(list(self.ltm))}\n\n"
+            f"STM Log (Recent):\n{chr(10).join(list(self.stm))}\n\n"
+            f"### INSTRUCTION\n"
+            f"Answer the user query naturally. Use current vision and the memory logs provided. If the user is asking something like 'most recent' or 'oldest' make sure to check all the times."
+            f"If you saw something in the logs that is no longer in the image, explain that.\n\n"
+            f"USER QUERY: {user_query}"
+        )
+
+        try:
+            resp = ollama.generate(model=VLM_MODEL, prompt=prompt_body, images=[buffer.tobytes()], think=False)
+            answer = resp['response'].strip()
+            
+            # Record the chat interaction in STM so the robot remembers the conversation
+            self.stm.append(f"[{datetime.now().strftime('%H:%M:%S')}] CHAT: User asked '{user_query}'. AI replied: '{answer}'")
+            return answer
+        except Exception as e:
+            return f"Chat Error: {e}"
         finally:
             self.is_thinking = False
