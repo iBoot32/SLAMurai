@@ -9,6 +9,7 @@ class SLAMuraiEngine:
     def __init__(self):
         self.STM_N = 8
         self.LTM_M = 15
+        self.NAVLOG_O = 10
         self.stm = deque(maxlen=self.STM_N)
         self.ltm = deque(maxlen=self.LTM_M)
         self.summary_counter = 0
@@ -17,8 +18,10 @@ class SLAMuraiEngine:
         self.stats = {"gen_time": 0.0, "tokens_per_sec": 0.0, "total_tokens": 0}
         self.state = {
             "pose": {"x": 0.0, "y": 0.0, "yaw": 0.0}, 
+            "nav_logs": deque(maxlen=self.NAVLOG_O),
             "observation": "Initializing...", 
-            "last_frame": None
+            "last_frame": None,
+            "map_bounds": None
         }
         self.is_thinking = False
 
@@ -29,7 +32,7 @@ class SLAMuraiEngine:
             f"The current time is {datetime.now().strftime('%H:%M:%S')}. "
             f"TASK: Distill the following STM logs into a single 'Key Object Index' for LTM.\n"
             f"Focus on permanent architecture and furniture. Ignore transient objects.\n"
-            f"Format: [time window] | Key: [objects] | Env: [room type]\n"
+            f"Format: [time window] | Key: [ALL objects WITH THEIR POSE] | Env: [room types WITH THE RESPECTIVE x, y, yaw pose we saw them]\n"
             f"LOGS:\n{stm_context}"
         )
         try:
@@ -44,28 +47,33 @@ class SLAMuraiEngine:
             return
         
         self.is_thinking = True
-        vlm_input = cv2.resize(self.state["last_frame"], (640, 480)) 
+        # Resize the composite image for inference
+        vlm_input = cv2.resize(self.state["last_frame"], (1000, 430)) 
         _, buffer = cv2.imencode('.jpg', vlm_input, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
         
-        # We place the rigid observation logic here so it only applies to routine scans
+        nav_context = "\n".join(list(self.state["nav_logs"]))
+        
         prompt_body = (
             f"STRICT RULE: YOU ARE A REAL-TIME OBSERVER. THE IMAGE IS TRUTH AND WHAT YOU SHOULD PAY ATTENTION TO.\n"
-            f"Memory tags (<ltm_archive> and <stm_log>) are for HISTORY AND RECALL ONLY.\n"
+            f"Memory tags (<ltm_archive> and <stm_log>) are for HISTORY AND RECALL ONLY and SHOULD NOT INFLUENCE YOUR CURRENT THOUGHTS.\n"
             f"Never assume the environment matches your memory.\n\n"
             f"### THE PAST (MEMORY)\n"
             f"<ltm_archive>\n{chr(10).join(list(self.ltm))}\n</ltm_archive>\n"
             f"<stm_log>\n{chr(10).join(list(self.stm))}\n</stm_log>\n\n"
-            f"### THE PRESENT (ABSOLUTE TRUTH)\n"
+            f"### SYSTEM LOGS (NAV2/ROS2)\n"
+            f"{nav_context}\n\n"
+            f"### THE PRESENT (ABSOLUTE TRUTH for current analysis)\n"
             f"Pose: {self.state['pose']}\n"
+            f"Map Bounds: {self.state['map_bounds']}\n"
             f"Time: {datetime.now().strftime('%H:%M:%S')}\n\n"
             f"OUTPUT FORMAT (MANDATORY):\n"
             f"[Current time] Pose [X, Y, Yaw]\n"
-            f"Objects: [object1(dist), object2(dist)...]\n"
-            f"Scene: [One single sentence describing the layout and room type.]\n\n"
+            f"Objects (be info-dense): [object1(dist), object2(dist)...]\n"
+            f"Scene: [1-2 sentences describing the layout and MANDATORY guess of room type.]\n\n"
             f"Example:\n"
-            f"[12:00:00] Pose [0.0, 0.0, 0.0]\n"
-            f"Objects: chair(1.0m), desk(0.5m)\n"
-            f"Scene: A workspace with a desk and chair, likely a home office."
+            f"[x:x:x] Pose [x, y, yaw]\n"
+            f"Objects: a(1.0m), b(0.5m), ...\n"
+            f"Scene: A <> with a and b, likely a <room type>."
         )
         
         try:
@@ -95,17 +103,22 @@ class SLAMuraiEngine:
             return "Vision system not ready."
 
         self.is_thinking = True
-        vlm_input = cv2.resize(self.state["last_frame"], (640, 480))
+        vlm_input = cv2.resize(self.state["last_frame"], (1000, 430))
         _, buffer = cv2.imencode('.jpg', vlm_input, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+
+        nav_context = "\n".join(list(self.state["nav_logs"]))
 
         prompt_body = (
             f"Current Time: {datetime.now().strftime('%H:%M:%S')}\n"
-            f"Current Pose: {self.state['pose']}\n\n"
+            f"Current Pose: {self.state['pose']}\n"
+            f"Map Bounds: {self.state['map_bounds']}\n\n"
+            f"### SYSTEM LOGS (NAV2/ROS2)\n"
+            f"{nav_context}\n\n"
             f"### MEMORY LOGS\n"
             f"LTM Archive:\n{chr(10).join(list(self.ltm))}\n\n"
             f"STM Log (Recent):\n{chr(10).join(list(self.stm))}\n\n"
             f"### INSTRUCTION\n"
-            f"Answer the user query naturally. Use current vision and the memory logs provided. If the user is asking something like 'most recent' or 'oldest' make sure to check all the times."
+            f"Answer the user query naturally and CONCISELY. Use current vision and the memory logs provided. If the user is asking something like 'most recent' or 'oldest' make sure to check all the times."
             f"If you saw something in the logs that is no longer in the image, explain that.\n\n"
             f"USER QUERY: {user_query}"
         )
