@@ -111,7 +111,7 @@ def generate_launch_description():
     urdf_file = os.path.join(slamurai_nav_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(slamurai_nav_share_dir, 'params', 'slam_toolbox.yaml')
     nav2_params_path = os.path.join(slamurai_nav_share_dir, 'params', 'nav2_params.yaml')
-    map_path = os.path.join(slamurai_nav_share_dir, 'maps', 'firstfloor_360.yaml')
+    map_path = os.path.join(slamurai_nav_share_dir, 'maps', 'f1t.yaml')
     bt = os.path.join(slamurai_nav_share_dir, 'params', 'nav_w_recovery.xml')
 
     # Use medium profile json for realsense
@@ -142,16 +142,15 @@ def generate_launch_description():
     rplidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
-                get_package_share_directory('sllidar_ros2'),
+                get_package_share_directory('rplidar_ros'),
                 'launch',
-                'sllidar_a1_launch.py'
+                'rplidar_a1_launch.py'
             )
         ),
         launch_arguments={
             'frame_id': 'lidar_link',
-            'scan_mode': 'Sensitivity',
-            'angle_min': '-3.14159265',
-            'angle_max': '3.14159265',
+            'angle_min': '-3.14',
+            'angle_max': '3.14',
             'angle_compensate': 'true',
         }.items()
     )
@@ -203,13 +202,13 @@ def generate_launch_description():
                 arguments=['--ros-args', '--log-level', 'debug'],
             ),
 
-            # launch_ros.actions.Node(
-            #     package="slam_toolbox",
-            #     node_executable="async_slam_toolbox_node",
-            #     node_name="slam_toolbox",
-            #     output="screen",
-            #     parameters=[toolbox_params_path],
-            # ),
+            #  launch_ros.actions.Node(
+            #      package="slam_toolbox",
+            #      node_executable="async_slam_toolbox_node",
+            #      node_name="slam_toolbox",
+            #      output="screen",
+            #      parameters=[toolbox_params_path],
+            #  ),
 
             rplidar_launch,
             nav2_launch,

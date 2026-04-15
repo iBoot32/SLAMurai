@@ -13,11 +13,11 @@ amcl:
     do_beamskip: true
     global_frame_id: "map"
     lambda_short: 0.1
-    laser_likelihood_max_dist: 4.5
-    laser_max_range: 6.0
+    laser_likelihood_max_dist: 11.5
+    laser_max_range: 11.5
     laser_min_range: -1.0
     laser_model_type: "likelihood_field"
-    max_beams: 50
+    max_beams: 100
     max_particles: 800
     min_particles: 300
     odom_frame_id: "odom"
@@ -37,6 +37,12 @@ amcl:
     z_max: 0.1
     z_rand: 0.25
     z_short: 0.05
+    set_initial_pose: True
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
 
 amcl_map_client:
   ros__parameters:
@@ -179,6 +185,8 @@ global_costmap:
         max_obstacle_height: 2.0
         clearing: True
         marking: True
+        obstacle_max_range: 11.5
+        raytrace_max_range: 11.5
 
   global_costmap_client:
     ros__parameters:
