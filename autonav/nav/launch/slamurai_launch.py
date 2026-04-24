@@ -111,7 +111,7 @@ def generate_launch_description():
     urdf_file = os.path.join(slamurai_nav_share_dir, 'urdf', 'SLAMurai.xml')
     toolbox_params_path = os.path.join(slamurai_nav_share_dir, 'params', 'slam_toolbox.yaml')
     nav2_params_path = os.path.join(slamurai_nav_share_dir, 'params', 'nav2_params.yaml')
-    map_path = os.path.join(slamurai_nav_share_dir, 'maps', 'f1t.yaml')
+    map_path = os.path.join(slamurai_nav_share_dir, 'maps', 'firstfloor_360.yaml')
     bt = os.path.join(slamurai_nav_share_dir, 'params', 'nav_w_recovery.xml')
 
     # Use medium profile json for realsense

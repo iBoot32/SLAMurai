@@ -10,6 +10,11 @@
 #define STEPS_PER_SEC_MAX 8000 / 4.0
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
+// Kinematic Acceleration & Deceleration Limits
+#define ACCEL_XY 0.15f // m/s^2
+#define DECEL_XY 0.25f // m/s^2 (Faster braking)
+#define ACCEL_W  0.30f // rad/s^2
+#define DECEL_W  0.30f // rad/s^2
 // ------- cmd_vel parser --------
 bool read_line_float(float* out) {
   static char rxbuf[64];
@@ -40,7 +45,7 @@ struct Stepper {
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(5);
+    drv.setRampLen(0); // Set to 0! We do kinematic smoothing, not independent motor ramping.
     drv.setSpeed(0);
   }
 
@@ -80,6 +85,10 @@ void setup() {
   stepperFront.setup(); stepperLeft.setup(); stepperBack.setup(); stepperRight.setup();
 }
 
+// -------- KINEMATIC STATE --------
+float target_vx = 0, target_vy = 0, target_w = 0;
+float current_vx = 0, current_vy = 0, current_w = 0;
+
 // -------- CMD_VEL READING --------
 float CMD_VEL_READ_PERIOD_US = 1e6 * (1 / 40.0);
 unsigned long last_cmd_vel_send_time = 0;
@@ -89,41 +98,69 @@ const unsigned long CMD_TIMEOUT_US = 500000;
 // -------- ODOM SENDING --------
 float ODOM_SEND_PERIOD_US = 1e6 * (1 / 40.0);
 float pose_x = 0, pose_y = 0, pose_yaw = 0;
+float dx_b_sum = 0, dy_b_sum = 0, dyaw_sum = 0; // Accumulators for stable velocity calc
 long lastFront = 0, lastLeft = 0, lastBack = 0, lastRight = 0;
 unsigned long last_odom_send_time = 0;
+
+// Helper function to step towards a target with separate accel/decel limits
+float move_towards(float current, float target, float accel_limit, float decel_limit, float dt) {
+  if (current == target) return current;
+
+  // Determine if we are speeding up or slowing down
+  bool accelerating = (target > 0 && current >= 0 && target > current) || (target < 0 && current <= 0 && target < current);
+  float max_step = (accelerating ? accel_limit : decel_limit) * dt;
+
+  if (current < target) {
+    current += max_step;
+    if (current > target) current = target;
+  } else {
+    current -= max_step;
+    if (current < target) current = target;
+  }
+  return current;
+}
 
 void loop() {
   unsigned long now = micros();
 
+  // ---- READ COMMANDS & APPLY KINEMATIC SMOOTHING ----
   if (now - last_cmd_vel_send_time >= CMD_VEL_READ_PERIOD_US) {
+    float dt_smooth = (now - last_cmd_vel_send_time) / 1000000.0f;
     last_cmd_vel_send_time = now;
 
     float cmd_v[3];
     if (read_line_float(cmd_v)) {
       last_cmd_received_time = now;
-
-      float vx = cmd_v[0], vy = cmd_v[1], w = cmd_v[2];
-      float vFront = -(vy + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vLeft =   (vx - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vBack =   (vy - ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-      float vRight = -(vx + ROBOT_CENTER_TO_WHEEL_RADIUS * w);
-   
-      stepperFront.setLinearVelocity(vFront);
-      stepperLeft.setLinearVelocity(vLeft);
-      stepperBack.setLinearVelocity(vBack);
-      stepperRight.setLinearVelocity(vRight);
+      target_vx = cmd_v[0];
+      target_vy = cmd_v[1];
+      target_w  = cmd_v[2];
     }
+
+    // Stop if no command for 0.5 seconds (sets target to 0 so it decelerates smoothly)
+    if (now - last_cmd_received_time > CMD_TIMEOUT_US) {
+      target_vx = 0;
+      target_vy = 0;
+      target_w = 0;
+    }
+
+    // Kinematic smoothing
+    current_vx = move_towards(current_vx, target_vx, ACCEL_XY, DECEL_XY, dt_smooth);
+    current_vy = move_towards(current_vy, target_vy, ACCEL_XY, DECEL_XY, dt_smooth);
+    current_w  = move_towards(current_w,  target_w,  ACCEL_W,  DECEL_W,  dt_smooth);
+
+    // Inverse kinematics
+    float vFront = -(current_vy + ROBOT_CENTER_TO_WHEEL_RADIUS * current_w);
+    float vLeft  =  (current_vx - ROBOT_CENTER_TO_WHEEL_RADIUS * current_w);
+    float vBack  =  (current_vy - ROBOT_CENTER_TO_WHEEL_RADIUS * current_w);
+    float vRight = -(current_vx + ROBOT_CENTER_TO_WHEEL_RADIUS * current_w);
+   
+    stepperFront.setLinearVelocity(vFront);
+    stepperLeft.setLinearVelocity(vLeft);
+    stepperBack.setLinearVelocity(vBack);
+    stepperRight.setLinearVelocity(vRight);
   }
 
-  // Stop if no command for 0.5 seconds
-  if (now - last_cmd_received_time > CMD_TIMEOUT_US) {
-    stepperFront.setLinearVelocity(0);
-    stepperLeft.setLinearVelocity(0);
-    stepperBack.setLinearVelocity(0);
-    stepperRight.setLinearVelocity(0);
-  }
-
-  // ---- ODOM UPDATE ----
+  // ---- ODOM UPDATE (Runs as fast as possible) ----
   long pFront = stepperFront.pos();
   long pLeft = stepperLeft.pos();
   long pBack = stepperBack.pos();
@@ -144,24 +181,46 @@ void loop() {
   float dy_b = (-sFront + sBack ) * 0.5f;
   float dyaw = -(sFront + sLeft + sBack + sRight) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
 
+  // Accumulate base frame deltas to calculate velocity later
+  dx_b_sum += dx_b;
+  dy_b_sum += dy_b;
+  dyaw_sum += dyaw;
+
   float cy = cos(pose_yaw);
   float sy = sin(pose_yaw);
   pose_x += cy * dx_b - sy * dy_b;
   pose_y += sy * dx_b + cy * dy_b;
   pose_yaw += dyaw;
 
+  // ---- SERIAL ODOM SEND ----
   now = micros();
   if (now - last_odom_send_time >= ODOM_SEND_PERIOD_US) {
+    float dt_odom = (now - last_odom_send_time) / 1000000.0f;
     last_odom_send_time = now;
 
     float x_mm = roundf(pose_x * 1000.0f) / 1000.0f;
     float y_mm = roundf(pose_y * 1000.0f) / 1000.0f;
     float yaw_r = roundf(pose_yaw * 1000.0f) / 1000.0f;
 
+    // Calculate actual velocity based on distance moved over the time window
+    float vel_x = dx_b_sum / dt_odom;
+    float vel_y = dy_b_sum / dt_odom;
+    float vel_w = dyaw_sum / dt_odom;
+
+    // Reset accumulators
+    dx_b_sum = 0; dy_b_sum = 0; dyaw_sum = 0;
+
+    // Print Format: X, Y, Yaw, vX, vY, vYaw
     Serial.print(x_mm, 3);
     Serial.print(',');
     Serial.print(y_mm, 3);
     Serial.print(',');
-    Serial.println(yaw_r, 2);
+    Serial.print(yaw_r, 3);
+    Serial.print(',');
+    Serial.print(vel_x, 3);
+    Serial.print(',');
+    Serial.print(vel_y, 3);
+    Serial.print(',');
+    Serial.println(vel_w, 3);
   }
 }

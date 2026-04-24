@@ -24,10 +24,15 @@ class CmdVelSerialOdom(Node):
         self.frame_id = "odom"
         self.child_frame_id = "base_link"
 
-        # Current odom values
+        # Current odom pose
         self.x = 0.0
         self.y = 0.0
         self.yaw = 0.0
+        
+        # Current odom velocity
+        self.vx = 0.0
+        self.vy = 0.0
+        self.vw = 0.0
 
         self.create_timer(1.0 / hz, self.publish_odom)
 
@@ -42,10 +47,13 @@ class CmdVelSerialOdom(Node):
             line = self.ser.readline().decode().strip()
             if line:
                 parts = line.split(',')
-                if len(parts) == 3:
-                    self.x = float(parts[0])   # already meters
+                if len(parts) == 6:
+                    self.x = float(parts[0])   # meters
                     self.y = float(parts[1])
                     self.yaw = float(parts[2])
+                    self.vx = float(parts[3])  # meters/sec
+                    self.vy = float(parts[4])
+                    self.vw = float(parts[5])
         except Exception:
             pass  # ignore malformed lines
 
@@ -58,10 +66,10 @@ class CmdVelSerialOdom(Node):
         msg.header.frame_id = self.frame_id
         msg.child_frame_id = self.child_frame_id
 
+        # Populate Pose
         msg.pose.pose.position.x = self.x
         msg.pose.pose.position.y = self.y
         msg.pose.pose.position.z = 0.0
-
         msg.pose.pose.orientation.x = 0.0
         msg.pose.pose.orientation.y = 0.0
         msg.pose.pose.orientation.z = qz
@@ -75,6 +83,24 @@ class CmdVelSerialOdom(Node):
             0.0,     0.0,     0.0,     1.0,     0.0,     0.0,
             0.0,     0.0,     0.0,     0.0,     1.0,     0.0,
             0.0,     0.0,     0.0,     0.0,     0.0,     3.05e-06
+        ]
+
+        # Populate Twist (Velocity)
+        msg.twist.twist.linear.x = self.vx
+        msg.twist.twist.linear.y = self.vy
+        msg.twist.twist.linear.z = 0.0
+        msg.twist.twist.angular.x = 0.0
+        msg.twist.twist.angular.y = 0.0
+        msg.twist.twist.angular.z = self.vw
+        
+        # Basic twist covariance 
+        msg.twist.covariance = [
+            1e-4, 0.0,  0.0,  0.0,  0.0,  0.0,
+            0.0,  1e-4, 0.0,  0.0,  0.0,  0.0,
+            0.0,  0.0,  1e-4, 0.0,  0.0,  0.0,
+            0.0,  0.0,  0.0,  1e-4, 0.0,  0.0,
+            0.0,  0.0,  0.0,  0.0,  1e-4, 0.0,
+            0.0,  0.0,  0.0,  0.0,  0.0,  1e-4
         ]
 
         self.publisher.publish(msg)

@@ -81,7 +81,7 @@ dwb_controller:
     max_vel_x: 0.25
     min_vel_y: -0.25
     max_vel_y: 0.25
-    max_speed_xy: 0.25
+    max_speed_xy: 0.35
     min_speed_xy: 0.02
 
     max_vel_theta: 0.6
@@ -92,15 +92,15 @@ dwb_controller:
     acc_lim_y: 0.15
     acc_lim_theta: 0.3
 
-    decel_lim_x: -0.15
-    decel_lim_y: -0.15
+    decel_lim_x: -0.25
+    decel_lim_y: -0.25
     decel_lim_theta: -0.3
 
-    vx_samples: 8
-    vy_samples: 8
-    vtheta_samples: 8
+    vx_samples: 12
+    vy_samples: 12
+    vtheta_samples: 5
 
-    sim_time: 3.0
+    sim_time: 1.5
     linear_granularity: 0.03
     angular_granularity: 0.025
 
@@ -112,7 +112,7 @@ dwb_controller:
 
     BaseObstacle.scale: 20.0
     PathAlign.scale: 10.0
-    PathDist.scale: 20.0
+    PathDist.scale: 15.0
     GoalDist.scale: 8.0
     Oscillation.oscillation_reset_dist: 0.05
     Oscillation.oscillation_reset_angle: 0.20

@@ -18,9 +18,9 @@ ekf_filter_node:
     
     # Odometry is given by motor ticks because system is open-loop due to using stepper motors 
     odom0: /odometry/raw
-    odom0_config: [true, true, false,      # x y z
+    odom0_config: [true, true, true,       # x y z
                    false, false, true,     # roll pitch yaw
-                   false, false, false,    # vx vy vz
+                   true, true, true,       # vx vy vz
                    false, false, false,    # angular velocity
                    false, false, false]    # linear accel
 
