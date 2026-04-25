@@ -88,8 +88,8 @@ dwb_controller:
     min_speed_theta: 0.01
 
     # VERY LOW ACCELERATION LIMITS
-    acc_lim_x: 0.15
-    acc_lim_y: 0.15
+    acc_lim_x: 0.2
+    acc_lim_y: 0.2
     acc_lim_theta: 0.3
 
     decel_lim_x: -0.25

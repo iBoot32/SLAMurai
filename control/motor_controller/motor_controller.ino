@@ -11,7 +11,7 @@
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
 // Kinematic Acceleration & Deceleration Limits
-#define ACCEL_XY 0.15f // m/s^2
+#define ACCEL_XY 0.20f // m/s^2
 #define DECEL_XY 0.25f // m/s^2 (Faster braking)
 #define ACCEL_W  0.30f // rad/s^2
 #define DECEL_W  0.30f // rad/s^2
@@ -45,7 +45,7 @@ struct Stepper {
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
-    drv.setRampLen(0); // Set to 0! We do kinematic smoothing, not independent motor ramping.
+    drv.setRampLen(3);
     drv.setSpeed(0);
   }
 
