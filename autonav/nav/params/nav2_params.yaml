@@ -88,13 +88,13 @@ dwb_controller:
     min_speed_theta: 0.01
 
     # VERY LOW ACCELERATION LIMITS
-    acc_lim_x: 0.2
-    acc_lim_y: 0.2
-    acc_lim_theta: 0.3
+    acc_lim_x: 0.4
+    acc_lim_y: 0.4
+    acc_lim_theta: 2.0
 
-    decel_lim_x: -0.25
-    decel_lim_y: -0.25
-    decel_lim_theta: -0.3
+    decel_lim_x: -0.55
+    decel_lim_y: -0.55
+    decel_lim_theta: -2.0
 
     vx_samples: 12
     vy_samples: 12
@@ -104,7 +104,7 @@ dwb_controller:
     linear_granularity: 0.03
     angular_granularity: 0.025
 
-    xy_goal_tolerance: 0.25
+    xy_goal_tolerance: 0.1
     yaw_goal_tolerance: 3.14159
     transform_tolerance: 0.5
 
