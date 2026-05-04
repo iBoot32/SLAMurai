@@ -65,12 +65,12 @@ class SLAMuraiEngine:
             f"Time: {datetime.now().strftime('%H:%M:%S')}\n\n"
             f"OUTPUT FORMAT (MANDATORY):\n"
             f"[Current time] Pose [X, Y, Yaw]\n"
-            f"Objects (be info-dense and descriptive): [object1(pose), object2(pose)...]\n"
-            f"Scene: [1-2 sentences describing the layout and MANDATORY guess of room type.]\n\n"
-            f"Example:\n"
+            f"Objects (be info-dense and descriptive): [object1(obj_pose), object2(obj_pose)...]\n"
+            f"Scene: [1 sentence describing the layout and MANDATORY guess of room type.]\n\n"
+            f"Example Format:\n"
             f"[x:x:x] Pose [x, y, yaw]\n"
             f"Objects: a(1.0, 2.0, 1.2), b(0.5m, 2.0, 1.2), ...\n"
-            f"Scene: A <> with a and b, likely a <room type>."
+            f"Scene: <predicted room type>."
         )
         
         try:
