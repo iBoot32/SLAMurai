@@ -50,6 +50,7 @@ class CmdVelGUI(Node):
         self.keys, self.release_job = set(), {}
         self.exact = None
         self.cmd = (0.0, 0.0, 0.0)
+        self.shown = {}
 
         self.root = tk.Tk()
         self.root.title('Robot drive')
@@ -314,6 +315,12 @@ class CmdVelGUI(Node):
             return (max(-1, min(1, x)) * s * self.max_lin, max(-1, min(1, y)) * s * self.max_lin, max(-1, min(1, w)) * s * self.max_ang)
         return self.exact or (0.0, 0.0, 0.0)
 
+    def put(self, w, **kw):
+        """Touch the widget only when its value changed: every config call is an X11 round trip."""
+        if self.shown.get(w) != kw:
+            self.shown[w] = kw
+            w.config(**kw)
+
     def tick(self):
         for _ in range(10):
             rclpy.spin_once(self, timeout_sec=0)
@@ -323,20 +330,20 @@ class CmdVelGUI(Node):
         m = Twist()
         m.linear.x, m.linear.y, m.angular.z = self.cmd
         self.pub.publish(m)
-        self.speed_lbl.config(text='%d%% of  %.2f m/s, %.2f rad/s' % (self.speed.get() * 100, self.max_lin, self.max_ang))
-        self.sent.config(text='You send   fwd %+.2f  left %+.2f  turn %+.2f' % self.cmd)
+        self.put(self.speed_lbl, text='%d%% of  %.2f m/s, %.2f rad/s' % (self.speed.get() * 100, self.max_lin, self.max_ang))
+        self.put(self.sent, text='You send   fwd %+.2f  left %+.2f  turn %+.2f' % self.cmd)
         fresh = time.monotonic() - self.safe_t < 1.0
         if fresh:
-            self.got.config(text='Robot gets fwd %+.2f  left %+.2f  turn %+.2f' % self.safe)
+            self.put(self.got, text='Robot gets fwd %+.2f  left %+.2f  turn %+.2f' % self.safe)
         else:
-            self.got.config(text='Robot gets  no data')
+            self.put(self.got, text='Robot gets  no data')
         moving = any(abs(v) > 1e-3 for v in self.cmd)
         if not fresh:
-            self.note.config(text='No safety gate output. Is it running?', fg=WARN)
+            self.put(self.note, text='No safety gate output. Is it running?', fg=WARN)
         elif moving and any(abs(a - b) > 0.03 for a, b in zip(self.cmd, self.safe)):
-            self.note.config(text='Safety gate is limiting the motion.', fg=WARN)
+            self.put(self.note, text='Safety gate is limiting the motion.', fg=WARN)
         else:
-            self.note.config(text='Ready' if not moving else 'Driving', fg=OK)
+            self.put(self.note, text='Ready' if not moving else 'Driving', fg=OK)
         self.root.after(50, self.tick)
 
     def close(self):
