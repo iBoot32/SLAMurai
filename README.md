@@ -1,4 +1,6 @@
-![SLAM Robot](images/slam_robot.png)
+![SLAM Robot assembly](images/slam_robot.gif)
+
+![SLAM Robot rendered](images/slam_robot_render.png)
 
 # SLAMurai Autonomous Robot
 
