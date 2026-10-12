@@ -1,263 +1,246 @@
 #!/usr/bin/env python3
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-import tkinter as tk
-from functools import partial
+"""Drive the robot by hand: on-screen joystick, keyboard, or exact values.
+Publishes /cmd_vel (the safety gate sits behind it). Every input falls back to zero when released."""
 import math
 import time
+import tkinter as tk
+from tkinter import ttk
+
+import rclpy
+from geometry_msgs.msg import Twist
+from rclpy.node import Node
+
+BG, PANEL, FG, DIM = '#1e2127', '#2a2f38', '#e6e6e6', '#8b93a1'
+ACCENT, STOP, OK, WARN = '#4da3ff', '#d9434e', '#58c27d', '#e0a030'
+JOY_R, PUCK_R, DEAD = 100, 22, 0.06
+KEYS = {'w': (1, 0, 0), 'up': (1, 0, 0), 's': (-1, 0, 0), 'down': (-1, 0, 0),
+        'a': (0, 1, 0), 'left': (0, 1, 0), 'd': (0, -1, 0), 'right': (0, -1, 0),
+        'q': (0, 0, 1), 'e': (0, 0, -1)}
+
 
 class CmdVelGUI(Node):
     def __init__(self):
         super().__init__('cmdvel_gui')
-        self.pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        
-        self.current_mode = 'text'
-        self.button_vel = Twist()
-        self.text_vel = Twist()
-        self.keyboard_vel = Twist()
+        self.declare_parameter('topic', '/cmd_vel')
+        self.declare_parameter('feedback_topic', '/cmd_vel_safe')
+        self.declare_parameter('max_linear', 0.21)
+        self.declare_parameter('max_angular', 0.5)
+        self.max_lin = float(self.get_parameter('max_linear').value)
+        self.max_ang = float(self.get_parameter('max_angular').value)
+        topic = self.get_parameter('topic').value
+        self.pub = self.create_publisher(Twist, topic, 10)
+        self.safe, self.safe_t = (0.0, 0.0, 0.0), 0.0
+        self.create_subscription(Twist, self.get_parameter('feedback_topic').value, self.on_safe, 10)
 
-        self.key_percent = 0.5
-
-        self.vel_limits = {
-            'linear.x': [0.01, 0.35],
-            'linear.y': [0.01, 0.35],
-            'angular.z': [0.01, 1.75]
-        }
-
-        self.button_speeds = {
-            'linear.x': 0.3,
-            'linear.y': 0.3,
-            'angular.z': 1.0
-        }
-
-        # --- debounce state ---
-        self.keys_down = set()
-        self.debounce = {}          # key -> after_id
-        self.debounce_ms = 70       # debounce window
+        self.joy = (0.0, 0.0)          # unit joystick vector (right, up)
+        self.joy_on = False
+        self.turn = 0.0                # -1..1, positive = counter-clockwise
+        self.turn_on = False
+        self.keys, self.release_job = set(), {}
+        self.exact = None
+        self.cmd = (0.0, 0.0, 0.0)
 
         self.root = tk.Tk()
-        self.root.title("ROS2 CmdVel GUI")
-
-        self.create_widgets()
-        self.bind_keyboard()
-        self.update_loop()
+        self.root.title('Robot drive')
+        self.root.configure(bg=BG)
+        self.root.resizable(False, False)
+        self.build(topic)
+        self.root.bind('<KeyPress>', self.key_down)
+        self.root.bind('<KeyRelease>', self.key_up)
+        self.root.bind('<FocusOut>', lambda e: self.stop(clear_exact=False))
+        self.root.protocol('WM_DELETE_WINDOW', self.close)
+        self.tick()
         self.root.mainloop()
 
-    def create_widgets(self):
-        self.entries = {}
-        self.sliders = {}
-        self.minmax_entries = {}
+    # ---- layout
+    def build(self, topic):
+        st = ttk.Style(self.root)
+        st.theme_use('clam')
+        st.configure('TFrame', background=BG)
+        st.configure('TLabel', background=BG, foreground=FG, font=('Segoe UI', 10))
+        st.configure('Dim.TLabel', foreground=DIM)
+        st.configure('Big.TLabel', font=('Consolas', 11))
+        st.configure('TScale', background=BG)
+        left = ttk.Frame(self.root, padding=14)
+        left.grid(row=0, column=0)
+        right = ttk.Frame(self.root, padding=(0, 14, 14, 14))
+        right.grid(row=0, column=1, sticky='n')
 
-        for i, (label, attr) in enumerate([
-            ('Forward/Back', 'linear.x'),
-            ('Left/Right', 'linear.y'),
-            ('Rotation', 'angular.z')
-        ]):
-            tk.Label(self.root, text=label).grid(row=i, column=0)
+        ttk.Label(left, text='Move', style='Dim.TLabel').pack(anchor='w')
+        size = 2 * JOY_R + 20
+        self.jc = tk.Canvas(left, width=size, height=size, bg=BG, highlightthickness=0, cursor='hand2')
+        self.jc.pack()
+        c = size // 2
+        self.jc.create_oval(c - JOY_R, c - JOY_R, c + JOY_R, c + JOY_R, fill=PANEL, outline='#3a414d', width=2)
+        self.jc.create_line(c, c - JOY_R, c, c + JOY_R, fill='#3a414d')
+        self.jc.create_line(c - JOY_R, c, c + JOY_R, c, fill='#3a414d')
+        for t, x, y in (('FWD', c, c - JOY_R + 12), ('BACK', c, c + JOY_R - 12), ('L', c - JOY_R + 12, c), ('R', c + JOY_R - 12, c)):
+            self.jc.create_text(x, y, text=t, fill=DIM, font=('Segoe UI', 8))
+        self.puck = self.jc.create_oval(c - PUCK_R, c - PUCK_R, c + PUCK_R, c + PUCK_R, fill=ACCENT, outline='')
+        self.jc.bind('<Button-1>', self.joy_drag)
+        self.jc.bind('<B1-Motion>', self.joy_drag)
+        self.jc.bind('<ButtonRelease-1>', self.joy_release)
 
-            self.entries[attr] = tk.Entry(self.root, width=5)
-            self.entries[attr].grid(row=i, column=1)
-            self.entries[attr].insert(0, "0.0")
+        ttk.Label(left, text='Turn', style='Dim.TLabel').pack(anchor='w', pady=(10, 0))
+        self.tc = tk.Canvas(left, width=size, height=46, bg=BG, highlightthickness=0, cursor='hand2')
+        self.tc.pack()
+        self.tc.create_rectangle(10, 14, size - 10, 32, fill=PANEL, outline='#3a414d', width=2)
+        self.tc.create_text(24, 40, text='CCW', fill=DIM, font=('Segoe UI', 8))
+        self.tc.create_text(size - 24, 40, text='CW', fill=DIM, font=('Segoe UI', 8))
+        self.tpuck = self.tc.create_oval(size // 2 - 14, 5, size // 2 + 14, 41, fill=ACCENT, outline='')
+        self.tc.bind('<Button-1>', self.turn_drag)
+        self.tc.bind('<B1-Motion>', self.turn_drag)
+        self.tc.bind('<ButtonRelease-1>', self.turn_release)
 
-            tk.Button(self.root, text="Stop",
-                      command=partial(self.stop_text, attr)).grid(row=i, column=2)
+        ttk.Label(right, text='Speed limit', style='Dim.TLabel').pack(anchor='w')
+        self.speed = tk.DoubleVar(value=0.5)
+        ttk.Scale(right, from_=0.05, to=1.0, variable=self.speed, length=230).pack(anchor='w')
+        self.speed_lbl = ttk.Label(right, style='Dim.TLabel')
+        self.speed_lbl.pack(anchor='w', pady=(0, 10))
 
-            self.sliders[attr] = tk.Scale(
-                self.root, from_=-1.0, to=1.0, resolution=0.01,
-                orient=tk.HORIZONTAL, length=200,
-                command=partial(self.slider_changed, attr)
-            )
-            self.sliders[attr].grid(row=i, column=3)
+        tk.Button(right, text='STOP  (space)', command=self.stop, bg=STOP, fg='white', activebackground='#b8323c',
+                  activeforeground='white', font=('Segoe UI', 14, 'bold'), relief='flat', height=2, width=18).pack(pady=(0, 12))
 
-            tk.Label(self.root, text="min").grid(row=i, column=4)
-            self.minmax_entries[attr+'_min'] = tk.Entry(self.root, width=5)
-            self.minmax_entries[attr+'_min'].grid(row=i, column=5)
-            self.minmax_entries[attr+'_min'].insert(0, str(self.vel_limits[attr][0]))
+        box = tk.Frame(right, bg=PANEL, padx=10, pady=8)
+        box.pack(fill='x')
+        self.sent = tk.Label(box, bg=PANEL, fg=FG, font=('Consolas', 10), justify='left', anchor='w')
+        self.sent.pack(fill='x')
+        self.got = tk.Label(box, bg=PANEL, fg=DIM, font=('Consolas', 10), justify='left', anchor='w')
+        self.got.pack(fill='x')
+        self.note = tk.Label(box, bg=PANEL, fg=OK, font=('Segoe UI', 9), anchor='w')
+        self.note.pack(fill='x', pady=(4, 0))
 
-            tk.Label(self.root, text="max").grid(row=i, column=6)
-            self.minmax_entries[attr+'_max'] = tk.Entry(self.root, width=5)
-            self.minmax_entries[attr+'_max'].grid(row=i, column=7)
-            self.minmax_entries[attr+'_max'].insert(0, str(self.vel_limits[attr][1]))
+        ttk.Label(right, text='Exact values', style='Dim.TLabel').pack(anchor='w', pady=(12, 0))
+        row = ttk.Frame(right)
+        row.pack(anchor='w')
+        self.ent = []
+        for name, unit in (('fwd', 'm/s'), ('left', 'm/s'), ('turn', 'rad/s')):
+            ttk.Label(row, text=name).grid(row=0, column=len(self.ent) * 2)
+            e = tk.Entry(row, width=5, bg=PANEL, fg=FG, insertbackground=FG, relief='flat')
+            e.insert(0, '0.0')
+            e.grid(row=0, column=len(self.ent) * 2 + 1, padx=(2, 8))
+            self.ent.append(e)
+        tk.Button(right, text='Drive these until stop', command=self.drive_exact, bg=PANEL, fg=FG, relief='flat').pack(anchor='w', pady=4)
 
-            tk.Button(self.root, text="Set",
-                      command=partial(self.update_limits, attr)).grid(row=i, column=8)
+        ttk.Label(right, text='Keys: W A S D or arrows move, Q E turn, Space or Esc stops.\nDrag the joystick. Letting go stops the robot.\nCommands go to %s through the safety gate.' % topic,
+                  style='Dim.TLabel', justify='left').pack(anchor='w', pady=(10, 0))
 
-        tk.Label(self.root, text="Keyboard % of max").grid(row=4, column=0)
-        self.key_slider = tk.Scale(
-            self.root, from_=0, to=1, resolution=0.01,
-            orient=tk.HORIZONTAL, length=200,
-            command=self.key_percent_changed
-        )
-        self.key_slider.set(self.key_percent)
-        self.key_slider.grid(row=4, column=1, columnspan=3)
+    # ---- inputs
+    def joy_drag(self, e):
+        c = (2 * JOY_R + 20) // 2
+        dx, dy = (e.x - c) / float(JOY_R), (c - e.y) / float(JOY_R)
+        n = math.hypot(dx, dy)
+        if n > 1:
+            dx, dy = dx / n, dy / n
+        self.joy, self.joy_on, self.exact = (dx, dy), True, None
+        self.jc.coords(self.puck, c + dx * JOY_R - PUCK_R, c - dy * JOY_R - PUCK_R, c + dx * JOY_R + PUCK_R, c - dy * JOY_R + PUCK_R)
 
-        self.canvas = tk.Canvas(self.root, width=250, height=250)
-        self.canvas.grid(row=6, column=0, columnspan=9, pady=10)
+    def joy_release(self, e=None):
+        c = (2 * JOY_R + 20) // 2
+        self.joy, self.joy_on = (0.0, 0.0), False
+        self.jc.coords(self.puck, c - PUCK_R, c - PUCK_R, c + PUCK_R, c + PUCK_R)
 
-        cx, cy, r = 125, 125, 80
-        self.draw_quarter_button(cx, cy, r, 0, math.pi/2, 'Forward', 'linear.x', self.button_speeds['linear.x'])
-        self.draw_quarter_button(cx, cy, r, math.pi/2, math.pi, 'Left', 'linear.y', self.button_speeds['linear.y'])
-        self.draw_quarter_button(cx, cy, r, math.pi, 3*math.pi/2, 'Back', 'linear.x', -self.button_speeds['linear.x'])
-        self.draw_quarter_button(cx, cy, r, 3*math.pi/2, 2*math.pi, 'Right', 'linear.y', -self.button_speeds['linear.y'])
-        self.draw_circle_button(cx + r/math.sqrt(2), cy - r/math.sqrt(2), 20, 'CW', 'angular.z', -self.button_speeds['angular.z'])
-        self.draw_circle_button(cx - r/math.sqrt(2), cy - r/math.sqrt(2), 20, 'CCW', 'angular.z', self.button_speeds['angular.z'])
+    def turn_drag(self, e):
+        w = 2 * JOY_R + 20
+        t = max(-1.0, min(1.0, (w // 2 - e.x) / float(w // 2 - 24)))
+        self.turn, self.turn_on, self.exact = t, True, None
+        x = w // 2 - t * (w // 2 - 24)
+        self.tc.coords(self.tpuck, x - 14, 5, x + 14, 41)
 
-    def key_percent_changed(self, val):
-        self.key_percent = float(val)
+    def turn_release(self, e=None):
+        w = 2 * JOY_R + 20
+        self.turn, self.turn_on = 0.0, False
+        self.tc.coords(self.tpuck, w // 2 - 14, 5, w // 2 + 14, 41)
 
-    # --- keyboard with debounce ---
-    def bind_keyboard(self):
-        self.root.bind('<KeyPress>', self.on_key)
-        self.root.bind('<KeyRelease>', self.on_key_release)
+    def key_down(self, e):
+        k = e.keysym.lower()
+        if k in ('space', 'escape'):
+            return self.stop()
+        if k in KEYS:
+            if k in self.release_job:                      # key repeat: cancel the pending release
+                self.root.after_cancel(self.release_job.pop(k))
+            self.keys.add(k)
+            self.exact = None
 
-    def on_key(self, event):
-        k = event.keysym.lower()
-        self.current_mode = 'keyboard'
+    def key_up(self, e):
+        k = e.keysym.lower()
+        if k in KEYS:
+            if k in self.release_job:
+                self.root.after_cancel(self.release_job[k])
+            self.release_job[k] = self.root.after(70, lambda: (self.keys.discard(k), self.release_job.pop(k, None)))
 
-        # cancel pending debounce removal
-        if k in self.debounce:
-            self.root.after_cancel(self.debounce[k])
-            del self.debounce[k]
-
-        self.keys_down.add(k)
-        self.update_keyboard_vel()
-
-    def on_key_release(self, event):
-        k = event.keysym.lower()
-        if k in self.debounce:
-            self.root.after_cancel(self.debounce[k])
-
-        # schedule delayed removal
-        self.debounce[k] = self.root.after(self.debounce_ms, lambda key=k: self.finish_release(key))
-
-    def finish_release(self, key):
-        if key in self.keys_down:
-            self.keys_down.remove(key)
-        if key in self.debounce:
-            del self.debounce[key]
-        self.update_keyboard_vel()
-
-    def update_keyboard_vel(self):
-        self.keyboard_vel = Twist()
-        pct = self.key_percent
-
-        max_vx = self.vel_limits['linear.x'][1]
-        max_vy = self.vel_limits['linear.y'][1]
-        max_wz = self.vel_limits['angular.z'][1]
-
-        if 'w' in self.keys_down:
-            self.keyboard_vel.linear.x = pct * max_vx
-        if 's' in self.keys_down:
-            self.keyboard_vel.linear.x = -pct * max_vx
-        if 'a' in self.keys_down:
-            self.keyboard_vel.linear.y = pct * max_vy
-        if 'd' in self.keys_down:
-            self.keyboard_vel.linear.y = -pct * max_vy
-        if 'q' in self.keys_down:
-            self.keyboard_vel.angular.z = pct * max_wz
-        if 'e' in self.keys_down:
-            self.keyboard_vel.angular.z = -pct * max_wz
-
-    # drawing
-    def draw_quarter_button(self, cx, cy, r, start, end, text, attr, val):
-        x0, y0 = cx-r, cy-r
-        x1, y1 = cx+r, cy+r
-        arc = self.canvas.create_arc(
-            x0, y0, x1, y1,
-            start=math.degrees(start),
-            extent=math.degrees(end-start),
-            fill='lightgray'
-        )
-        self.canvas.tag_bind(arc, '<Button-1>', lambda e: self.button_move(attr, val))
-        mid = (start+end)/2
-        tx = cx + r/2 * math.cos(mid)
-        ty = cy - r/2 * math.sin(mid)
-        self.canvas.create_text(tx, ty, text=text)
-
-    def draw_circle_button(self, cx, cy, radius, text, attr, val):
-        oval = self.canvas.create_oval(
-            cx-radius, cy-radius, cx+radius, cy+radius,
-            fill='lightblue'
-        )
-        self.canvas.tag_bind(oval, '<Button-1>', lambda e: self.button_move(attr, val))
-        self.canvas.create_text(cx, cy, text=text)
-
-    def slider_changed(self, attr, val):
-        val = float(val)
-        minv, maxv = self.vel_limits[attr]
-        if val > 0:
-            v = minv + (maxv - minv) * val
-        elif val < 0:
-            v = -(minv + (maxv - minv) * abs(val))
-        else:
-            v = 0.0
-        self.entries[attr].delete(0, tk.END)
-        self.entries[attr].insert(0, str(v))
-        self.set_text_mode(attr)
-
-    def stop_text(self, attr):
-        self.entries[attr].delete(0, tk.END)
-        self.entries[attr].insert(0, "0.0")
-        self.sliders[attr].set(0.0)
-        self.set_text_mode(attr)
-
-    def button_move(self, attr, val):
-        self.current_mode = 'button'
-        self.button_vel = Twist()
-        if attr.startswith('linear'):
-            setattr(self.button_vel.linear, attr.split('.')[1], val)
-        else:
-            setattr(self.button_vel.angular, attr.split('.')[1], val)
-
-    def set_text_mode(self, attr):
-        self.current_mode = 'text'
-        for k in ['linear.x', 'linear.y', 'angular.z']:
-            try:
-                v = float(self.entries[k].get())
-                minv, maxv = self.vel_limits[k]
-                if abs(v) < minv:
-                    v = 0.0
-                elif v > 0:
-                    v = min(v, maxv)
-                else:
-                    v = max(v, -maxv)
-
-                if k.startswith('linear'):
-                    setattr(self.text_vel.linear, k.split('.')[1], v)
-                else:
-                    setattr(self.text_vel.angular, k.split('.')[1], v)
-            except:
-                if k.startswith('linear'):
-                    setattr(self.text_vel.linear, k.split('.')[1], 0.0)
-                else:
-                    setattr(self.text_vel.angular, k.split('.')[1], 0.0)
-
-    def update_limits(self, attr):
+    def drive_exact(self):
         try:
-            minv = float(self.minmax_entries[attr+'_min'].get())
-            maxv = float(self.minmax_entries[attr+'_max'].get())
-            self.vel_limits[attr] = [minv, maxv]
-        except:
-            pass
+            v = [float(x.get()) for x in self.ent]
+        except ValueError:
+            self.note.config(text='Exact values must be numbers.', fg=WARN)
+            return
+        self.exact = (max(-self.max_lin, min(self.max_lin, v[0])), max(-self.max_lin, min(self.max_lin, v[1])),
+                      max(-self.max_ang, min(self.max_ang, v[2])))
 
-    def update_loop(self):
-        if self.current_mode == 'text':
-            msg = self.text_vel
-        elif self.current_mode == 'button':
-            msg = self.button_vel
+    def stop(self, clear_exact=True):
+        self.keys.clear()
+        if clear_exact:
+            self.exact = None
+        self.joy_release()
+        self.turn_release()
+
+    def on_safe(self, m):
+        self.safe, self.safe_t = (m.linear.x, m.linear.y, m.angular.z), time.monotonic()
+
+    # ---- loop
+    def command(self):
+        s = self.speed.get()
+        if self.joy_on or self.turn_on:
+            jx, jy = self.joy
+            n = math.hypot(jx, jy)
+            if n < DEAD:
+                jx = jy = 0.0
+            return (jy * s * self.max_lin, -jx * s * self.max_lin, (self.turn if abs(self.turn) > DEAD else 0.0) * s * self.max_ang)
+        if self.keys:
+            x = sum(KEYS[k][0] for k in self.keys)
+            y = sum(KEYS[k][1] for k in self.keys)
+            w = sum(KEYS[k][2] for k in self.keys)
+            n = math.hypot(x, y)
+            if n > 1:
+                x, y = x / n, y / n
+            return (max(-1, min(1, x)) * s * self.max_lin, max(-1, min(1, y)) * s * self.max_lin, max(-1, min(1, w)) * s * self.max_ang)
+        return self.exact or (0.0, 0.0, 0.0)
+
+    def tick(self):
+        rclpy.spin_once(self, timeout_sec=0)
+        self.cmd = self.command()
+        m = Twist()
+        m.linear.x, m.linear.y, m.angular.z = self.cmd
+        self.pub.publish(m)
+        self.speed_lbl.config(text='%d%% of  %.2f m/s, %.2f rad/s' % (self.speed.get() * 100, self.max_lin, self.max_ang))
+        self.sent.config(text='You send   fwd %+.2f  left %+.2f  turn %+.2f' % self.cmd)
+        fresh = time.monotonic() - self.safe_t < 1.0
+        if fresh:
+            self.got.config(text='Robot gets fwd %+.2f  left %+.2f  turn %+.2f' % self.safe)
         else:
-            msg = self.keyboard_vel
+            self.got.config(text='Robot gets  no data')
+        moving = any(abs(v) > 1e-3 for v in self.cmd)
+        if not fresh:
+            self.note.config(text='No safety gate output. Is it running?', fg=WARN)
+        elif moving and any(abs(a - b) > 0.03 for a, b in zip(self.cmd, self.safe)):
+            self.note.config(text='Safety gate is limiting the motion.', fg=WARN)
+        else:
+            self.note.config(text='Ready' if not moving else 'Driving', fg=OK)
+        self.root.after(50, self.tick)
 
-        self.pub.publish(msg)
-        self.root.after(50, self.update_loop)
+    def close(self):
+        for _ in range(5):
+            self.pub.publish(Twist())
+        self.root.destroy()
+
 
 def main(args=None):
     rclpy.init(args=args)
     node = CmdVelGUI()
-    rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
