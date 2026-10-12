@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Drive the robot by hand: on-screen joystick, keyboard, or exact values.
 Publishes /cmd_vel (the safety gate sits behind it). Every input falls back to zero when released."""
+import io
 import math
 import time
 import tkinter as tk
@@ -9,6 +10,12 @@ from tkinter import ttk
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
+from sensor_msgs.msg import CompressedImage, Image
+
+try:
+    from PIL import Image as PILImage
+except ImportError:
+    PILImage = None
 
 BG, PANEL, FG, DIM = '#1e2127', '#2a2f38', '#e6e6e6', '#8b93a1'
 ACCENT, STOP, OK, WARN = '#4da3ff', '#d9434e', '#58c27d', '#e0a030'
@@ -25,12 +32,16 @@ class CmdVelGUI(Node):
         self.declare_parameter('feedback_topic', '/cmd_vel_safe')
         self.declare_parameter('max_linear', 0.21)
         self.declare_parameter('max_angular', 0.5)
+        self.declare_parameter('camera_topic', '/camera/color/image_raw/compressed')
+        self.declare_parameter('camera_width', 320)
         self.max_lin = float(self.get_parameter('max_linear').value)
         self.max_ang = float(self.get_parameter('max_angular').value)
         topic = self.get_parameter('topic').value
         self.pub = self.create_publisher(Twist, topic, 10)
         self.safe, self.safe_t = (0.0, 0.0, 0.0), 0.0
         self.create_subscription(Twist, self.get_parameter('feedback_topic').value, self.on_safe, 10)
+        self.cam_sub, self.cam_msg, self.cam_shown = None, None, 0.0
+        self.cam_w = int(self.get_parameter('camera_width').value)
 
         self.joy = (0.0, 0.0)          # unit joystick vector (right, up)
         self.joy_on = False
@@ -45,6 +56,7 @@ class CmdVelGUI(Node):
         self.root.configure(bg=BG)
         self.root.resizable(False, False)
         self.build(topic)
+        self.refresh_topics()
         self.root.bind('<KeyPress>', self.key_down)
         self.root.bind('<KeyRelease>', self.key_up)
         self.root.bind('<FocusOut>', lambda e: self.stop(clear_exact=False))
@@ -65,6 +77,12 @@ class CmdVelGUI(Node):
         left.grid(row=0, column=0)
         right = ttk.Frame(self.root, padding=(0, 14, 14, 14))
         right.grid(row=0, column=1, sticky='n')
+        self.cam_frame = ttk.Frame(self.root, padding=(0, 14, 14, 14))
+        self.cam_frame.grid(row=0, column=2, sticky='n')
+        ttk.Label(self.cam_frame, text='Camera', style='Dim.TLabel').pack(anchor='w')
+        self.cam_lbl = tk.Label(self.cam_frame, bg=PANEL, fg=DIM, text='waiting for image...', width=40, height=12)
+        self.cam_lbl.pack()
+        self.cam_frame.grid_remove()
 
         ttk.Label(left, text='Move', style='Dim.TLabel').pack(anchor='w')
         size = 2 * JOY_R + 20
@@ -91,6 +109,25 @@ class CmdVelGUI(Node):
         self.tc.bind('<Button-1>', self.turn_drag)
         self.tc.bind('<B1-Motion>', self.turn_drag)
         self.tc.bind('<ButtonRelease-1>', self.turn_release)
+
+        ttk.Label(right, text='Drive topic', style='Dim.TLabel').pack(anchor='w')
+        row = ttk.Frame(right)
+        row.pack(anchor='w', fill='x', pady=(0, 8))
+        self.cmd_box = ttk.Combobox(row, width=28, values=[topic])
+        self.cmd_box.set(topic)
+        self.cmd_box.pack(side='left')
+        self.cmd_box.bind('<<ComboboxSelected>>', self.pick_cmd)
+        self.cmd_box.bind('<Return>', self.pick_cmd)
+        tk.Button(row, text='\u21bb', command=self.refresh_topics, bg=PANEL, fg=FG, relief='flat', width=3).pack(side='left', padx=4)
+
+        self.cam_on = tk.BooleanVar(value=False)
+        ttk.Checkbutton(right, text='Show camera', variable=self.cam_on, command=self.toggle_camera).pack(anchor='w')
+        cam_topic = self.get_parameter('camera_topic').value
+        self.cam_box = ttk.Combobox(right, width=34, values=[cam_topic])
+        self.cam_box.set(cam_topic)
+        self.cam_box.pack(anchor='w', pady=(0, 8))
+        self.cam_box.bind('<<ComboboxSelected>>', self.pick_cam)
+        self.cam_box.bind('<Return>', self.pick_cam)
 
         ttk.Label(right, text='Speed limit', style='Dim.TLabel').pack(anchor='w')
         self.speed = tk.DoubleVar(value=0.5)
@@ -122,8 +159,78 @@ class CmdVelGUI(Node):
             self.ent.append(e)
         tk.Button(right, text='Drive these until stop', command=self.drive_exact, bg=PANEL, fg=FG, relief='flat').pack(anchor='w', pady=4)
 
-        ttk.Label(right, text='Keys: W A S D or arrows move, Q E turn, Space or Esc stops.\nDrag the joystick. Letting go stops the robot.\nCommands go to %s through the safety gate.' % topic,
+        ttk.Label(right, text='Keys: W A S D or arrows move, Q E turn, Space or Esc stops.\nDrag the joystick. Letting go stops the robot.',
                   style='Dim.TLabel', justify='left').pack(anchor='w', pady=(10, 0))
+
+    # ---- topics and camera
+    def refresh_topics(self):
+        names = self.get_topic_names_and_types()
+        twist = sorted(n for n, t in names if 'geometry_msgs/msg/Twist' in t)
+        imgs = sorted(n for n, t in names if 'sensor_msgs/msg/CompressedImage' in t or 'sensor_msgs/msg/Image' in t)
+        if twist:
+            self.cmd_box['values'] = twist
+        if imgs:
+            self.cam_box['values'] = imgs
+
+    def pick_cmd(self, e=None):
+        self.stop()
+        for _ in range(3):
+            self.pub.publish(Twist())
+        self.destroy_publisher(self.pub)
+        self.pub = self.create_publisher(Twist, self.cmd_box.get().strip(), 10)
+
+    def toggle_camera(self):
+        if self.cam_on.get():
+            if PILImage is None:
+                self.cam_on.set(False)
+                self.note.config(text='Camera needs python3-pil.', fg=WARN)
+                return
+            self.cam_frame.grid()
+            self.pick_cam()
+        else:
+            self.cam_frame.grid_remove()
+            if self.cam_sub is not None:
+                self.destroy_subscription(self.cam_sub)
+                self.cam_sub, self.cam_msg = None, None
+
+    def pick_cam(self, e=None):
+        if not self.cam_on.get():
+            return
+        if self.cam_sub is not None:
+            self.destroy_subscription(self.cam_sub)
+        topic = self.cam_box.get().strip()
+        kinds = dict(self.get_topic_names_and_types()).get(topic, [])
+        compressed = any('CompressedImage' in t for t in kinds) or (not kinds and topic.endswith('compressed'))
+        self.cam_msg = None
+        self.cam_lbl.config(image='', text='waiting for image...')
+        self.cam_sub = self.create_subscription(CompressedImage if compressed else Image, topic, self.on_image, 1)
+
+    def on_image(self, m):
+        self.cam_msg = m
+
+    def show_frame(self):
+        m, self.cam_msg = self.cam_msg, None
+        if m is None or time.monotonic() - self.cam_shown < 0.1:
+            return
+        self.cam_shown = time.monotonic()
+        try:
+            if isinstance(m, CompressedImage):
+                img = PILImage.open(io.BytesIO(bytes(m.data))).convert('RGB')
+            elif m.encoding in ('rgb8', 'bgr8'):
+                img = PILImage.frombytes('RGB', (m.width, m.height), bytes(m.data))
+                if m.encoding == 'bgr8':
+                    img = PILImage.merge('RGB', img.split()[::-1])
+            elif m.encoding == 'mono8':
+                img = PILImage.frombytes('L', (m.width, m.height), bytes(m.data)).convert('RGB')
+            else:
+                self.cam_lbl.config(image='', text='unsupported encoding %s' % m.encoding)
+                return
+            if img.width != self.cam_w:
+                img = img.resize((self.cam_w, max(1, img.height * self.cam_w // img.width)))
+            self.cam_img = tk.PhotoImage(data=b'P6 %d %d 255\n' % img.size + img.tobytes())
+            self.cam_lbl.config(image=self.cam_img, text='', width=img.width, height=img.height)
+        except Exception as ex:
+            self.cam_lbl.config(image='', text='image error: %s' % ex)
 
     # ---- inputs
     def joy_drag(self, e):
@@ -208,7 +315,10 @@ class CmdVelGUI(Node):
         return self.exact or (0.0, 0.0, 0.0)
 
     def tick(self):
-        rclpy.spin_once(self, timeout_sec=0)
+        for _ in range(10):
+            rclpy.spin_once(self, timeout_sec=0)
+        if self.cam_on.get():
+            self.show_frame()
         self.cmd = self.command()
         m = Twist()
         m.linear.x, m.linear.y, m.angular.z = self.cmd
