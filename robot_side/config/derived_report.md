@@ -2,7 +2,7 @@
 
 - `robot_radius_m` = 0.185  - CAD circumradius 0.175 (dome wall) + 0.01 pad; a circle is exact for an omni robot
 - `wheel_speed_cap_m_s` = 0.5832  - wheel_steps_per_sec_max / (steps_per_rev / (2 pi r))
-- `wheel_centre_radius_m` = 0.133  - CAD wheel-centre plane radius (the v13-era firmware had 0.151)
+- `wheel_centre_radius_m` = 0.1325  - CAD wheel-centre plane radius (the v13-era firmware had 0.151)
 - `w_max_rad_s` = 0.5  - policy
 - `v_max_m_s` = 0.21  - wheel_cap_fraction*cap - R_wheel*w_max: the fastest wheel runs at |v| + R*w along its drive direction
 - `a_brake_m_s2` = 0.495  - brake_decel_fraction * min(firmware decel, usable accel)
@@ -17,7 +17,7 @@
 - `stop_margin_m` = 0.05  - policy
 - `dyn_obstacle_speed_m_s` = 0.25  - policy
 - `gap_needed_at_vmax_m` = 0.371  - free distance beyond the robot circle needed to run at v_max
-- `wheel_azimuths_deg` = [45.0, 135.0, 225.0, 315.0]
+- `wheel_azimuths_deg` = [0.0, 90.0, 180.0, 270.0]
 - `wheel_cap_eff_m_s` = 0.5715
 - `unknown_creep_m_s` = 0.05
 - `blind_wedge_speed_cap_m_s` = 0.15
@@ -84,4 +84,4 @@
 - `nav.samples`: trajectory count limited so ~25600 pose evaluations x 2.0 us stay inside 55 % of one control period (55 ms)
 - `nav.amcl_update_min_d`: >= distance travelled per scan at v_max (0.030 m); finer only costs CPU
 
-safety_config lock: `2efc5771b56c4b20`
+safety_config lock: `2d25f4dc66eb99e8`

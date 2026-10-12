@@ -2,8 +2,9 @@
 # (tools/extract_cad_profile.py).  `confirm:` items are assumptions to verify on the real robot before the first
 # autonomous session; the commissioning script asks about each of them.
 robot:
-  name: SLAMurai-v17
-  drive: xdrive_omni              # 4 wheels at 45/135/225/315 deg
+  name: SLAMurai-assemv2
+  drive: plus_omni                # 4 wheels at 0/90/180/270 deg (front, left, back, right), as in motor_controller.ino
+  wheel_azimuths_deg: [0.0, 90.0, 180.0, 270.0]
   mass_kg: 5.0                    # confirm: CAD review estimate (printed parts x fill factor); weigh the real robot
   com_height_m: 0.071
   wheel_radius_m: 0.0297          # effective rolling radius used by the firmware

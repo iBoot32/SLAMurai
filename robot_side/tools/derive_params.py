@@ -68,7 +68,7 @@ def derive(cad, prof):
     need = d_stop + pol['stop_margin_m'] + pol['dyn_obstacle_speed_m_s'] * (t_fixed + scan_time + 0.05 + v_max / a_brake)
     put('gap_needed_at_vmax_m', round(need, 3), 'free distance beyond the robot circle needed to run at v_max')
 
-    out['wheel_azimuths_deg'] = [45.0, 135.0, 225.0, 315.0]
+    out['wheel_azimuths_deg'] = r.get('wheel_azimuths_deg', [45.0, 135.0, 225.0, 315.0])
     out['wheel_cap_eff_m_s'] = round(pol['wheel_cap_fraction'] * cap, 4)
     out['lidar'] = {
         'frame_yaw_rad': L['frame_yaw_rad'],

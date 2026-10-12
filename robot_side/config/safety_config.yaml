@@ -14,8 +14,8 @@ latency_fixed_s: 0.12000000000000001
 lateral_margin_m: 0.03
 lidar:
   axis_offset_xy_m:
-  - -0.0037
-  - -0.0
+  - 0.0
+  - 0.0
   blind_wedges_deg:
   - - 90.0
     - 2.0
@@ -26,9 +26,9 @@ lidar:
   frame_yaw_rad: 3.14159
   range_max_m: 11.5
   range_min_m: 0.15
-  scan_plane_height_m: 0.1987
+  scan_plane_height_m: 0.12
   self_return_radius_m: 0.1
-lock_sha256: 2efc5771b56c4b20
+lock_sha256: 2d25f4dc66eb99e8
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185
@@ -42,10 +42,10 @@ unknown_creep_m_s: 0.05
 v_max_m_s: 0.21
 w_max_rad_s: 0.5
 wheel_azimuths_deg:
-- 45.0
-- 135.0
-- 225.0
-- 315.0
+- 0.0
+- 90.0
+- 180.0
+- 270.0
 wheel_cap_eff_m_s: 0.5715
-wheel_centre_radius_m: 0.133
+wheel_centre_radius_m: 0.1325
 wheel_speed_cap_m_s: 0.5832
