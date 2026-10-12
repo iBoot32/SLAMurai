@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pdb
+*.exe
+*.obj
+*.ilk
+*.npz
+.pytest_cache/
+.zig-cache/
+# generated or too large for GitHub
+*.3mf
+robot_cad/meshcache/

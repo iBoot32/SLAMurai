@@ -256,3 +256,21 @@ This ensures reliable stepper performance without missing steps during complex m
 # License
 
 MIT License
+
+---
+
+# Repository layout
+
+```
+robotlab/      PC library: connect to the robot, drive trials, score, sweep/compare/optimize (profiles/ = per-robot mapping)
+recipes/       example experiment scripts for an agent to copy
+robot_side/    runs on the Jetson: safety gate, Nav2 restart helper, human tools (commission, approve, arm), config
+autonav/       Nav2 launch files, parameters, ROS node
+control/       stepper firmware (motor_controller_xdrive_safe) with its own limits
+cortex/        LLM interface
+robot_cad/     SolidWorks CAD, versions, build scripts
+tests/         unit and light integration tests (python -m pytest tests)
+docs/          findings and the list of edits made in this copy
+images/        README images
+CLAUDE.md      architecture rules for the autotune library
+```

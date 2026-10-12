@@ -1,0 +1,52 @@
+# Hand-maintained inputs that CAD cannot give.  Everything geometric comes from config/cad_profile.json
+# (tools/extract_cad_profile.py).  `confirm:` items are assumptions to verify on the real robot before the first
+# autonomous session; the commissioning script asks about each of them.
+robot:
+  name: SLAMurai-v17
+  drive: xdrive_omni              # 4 wheels at 45/135/225/315 deg
+  mass_kg: 5.0                    # confirm: CAD review estimate (printed parts x fill factor); weigh the real robot
+  com_height_m: 0.071
+  wheel_radius_m: 0.0297          # effective rolling radius used by the firmware
+  steps_per_rev: 3200             # 200 x 1/16 microstep
+  wheel_steps_per_sec_max: 5000   # firmware STEPS_PER_SEC_MAX (MobaTools on a Mega)
+  fw_accel_xy: 0.40               # firmware ACCEL_XY  (m/s^2)
+  fw_decel_xy: 0.55               # firmware DECEL_XY
+  fw_accel_w: 2.0
+  fw_decel_w: 2.0
+  usable_accel_ms2: 2.2           # CAD drive_analysis.py at 5 kg, half pull-out torque
+  rolling_resistance: 0.03
+lidar:
+  model: RPLIDAR A1M8
+  scan_hz_min: 5.0                # A1 is 5.5 Hz typical, 2-10 Hz motor range: the stop distance uses the slow end
+  scan_hz_typ: 7.0
+  range_min_m: 0.15
+  range_max_use_m: 11.5
+  frame_yaw_rad: 3.14159          # confirm: from autonav/nav/urdf lidar_joint rpy; verify with commission.py
+  beams_nominal: 360
+compute:
+  board: Jetson TX2
+  controller_hz_max: 10.0         # the rate the user runs today; raise only if `ros2 topic hz /cmd_vel` keeps up
+  dwb_pose_eval_us: 2.0           # confirm: ~cost of one trajectory-point x critic evaluation on this board
+  amcl_beam_particles_per_s: 3000000 # confirm: max_beams x max_particles x update_rate the board sustains
+environment:
+  indoor: true
+  min_door_width_m: 0.80
+  typical_wall_clearance_goal_m: 0.45
+policy:                           # human decisions; changing these changes the safety envelope
+  w_max_rad_s: 0.5
+  wheel_cap_fraction: 0.98        # use at most 98 % of the firmware wheel-speed cap
+  lateral_margin_m: 0.03          # sideways clearance kept while driving along a wall (on top of the robot circle)
+  stop_margin_m: 0.05             # distance still left between the robot circle and an obstacle when stopped
+  dyn_obstacle_speed_m_s: 0.25    # something moving toward the robot (pet, child, door) is allowed for in the stop distance
+  brake_decel_fraction: 0.9       # the gate assumes it gets this fraction of the firmware decel
+  unknown_creep_m_s: 0.05
+  blind_wedge_speed_cap_m_s: 0.15
+  tether_radius_m: 3.0            # max distance from the arming point (odometry frame) before a hard stop
+  tether_hard_extra_m: 0.10
+  max_session_s: 7200
+  heartbeat_timeout_s: 4.0
+  scan_stale_s: 0.5
+  cmd_stale_s: 0.4
+  odom_stale_s: 0.3
+  amcl_travel_stale_m: 0.5        # map pose is "stale" after this much odometry travel without an AMCL update
+  amcl_cov_limit_m: 0.35

@@ -1,0 +1,57 @@
+# Everything robot-specific that the PC side needs. A new robot gets a new profile, no code changes.
+# Paths are relative to this file. Leave a section out if the robot has no such thing.
+host: 10.0.0.98
+port: 9090
+
+goal:                                  # how a navigation goal is sent (map frame)
+  topic: /move_base_simple/goal
+  type: geometry_msgs/PoseStamped
+  frame: map
+
+heartbeat:                             # dead-man message, sent only while the script runs robot.sleep()
+  topic: /safety/heartbeat
+  type: std_msgs/String
+  data: hb
+  period_s: 0.4
+
+restart:                               # how Nav2 is restarted with new parameters (Dashing reads them only at start-up)
+  topic: /autotune/nav2_restart
+  type: std_msgs/String
+  status_topic: /autotune/nav2_status
+  status_type: std_msgs/String
+  timeout_s: 240
+
+streams:                               # name: topic and type; the type decides how the message is read
+  odom:    {topic: /odometry/raw,       type: nav_msgs/msg/Odometry, throttle_ms: 40}
+  amcl:    {topic: /amcl_pose,          type: geometry_msgs/msg/PoseWithCovarianceStamped}
+  cmd_in:  {topic: /cmd_vel,            type: geometry_msgs/msg/Twist}
+  cmd_out: {topic: /cmd_vel_safe,       type: geometry_msgs/msg/Twist, throttle_ms: 40}
+  plan:    {topic: /plan,               type: nav_msgs/msg/Path, queue_length: 1}
+  log:     {topic: /rosout,             type: rcl_interfaces/msg/Log}
+  status:  {topic: /safety/status,      type: std_msgs/msg/String}
+  tf:      {topic: /tf,                 type: tf2_msgs/msg/TFMessage}
+
+pose:                                  # map pose = map->odom (localization) composed with odom->base (odometry)
+  map_frame: map
+  odom_frame: odom
+  base_frames: [base_footprint, base_link]
+
+status:                                # JSON keys in the safety status message
+  faults: faults                       # list, empty when healthy
+  armed: armed
+  clearance: min_clear                 # nearest obstacle distance, metres
+  limit: limit                         # why the safety layer reduced the command
+
+log_patterns:                          # counted in the log stream
+  recovery: Attempting
+  failure: Navigation failed
+
+nav2_params: ../../autonav/nav/params/nav2_params.yaml
+
+limits_from_params:                    # where the speed/accel limits live in the Nav2 parameters (used by the metrics)
+  v_cmd: dwb_controller/ros__parameters/max_speed_xy
+  w_cmd: dwb_controller/ros__parameters/max_vel_theta
+  acc: dwb_controller/ros__parameters/acc_lim_x
+  dec: dwb_controller/ros__parameters/decel_lim_x
+
+aliases: {}                            # optional short names, e.g. speed: [dwb_controller/ros__parameters/max_vel_x, ...]

@@ -1,0 +1,7 @@
+robot_side/**/*.py text eol=lf
+autonav/nav/src/*.py text eol=lf
+*.SLDASM binary
+*.SLDPRT binary
+*.sldasm binary
+*.sldprt binary
+*.SLDDRW binary
