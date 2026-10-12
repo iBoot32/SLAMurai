@@ -20,14 +20,15 @@
 // Robot params
 #define WHEEL_RADIUS_M 0.0297
 #define ROBOT_CENTER_TO_WHEEL_RADIUS 0.133   // v17 CAD wheel-centre plane radius; trim after a 360 deg spin test
-#define STEPS_PER_REV 3200
+#define STEPS_PER_REV 1600
 #define STEPS_PER_SEC_MAX 5000
+#define MOTOR_DIR_SIGN -1      // TMC2209 drivers spin every motor the opposite way to the old DRV8825: -1 flips all wheels (and their step counts)
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
 // ---- safety envelope (robot_side/config/safety_config.yaml is generated from the same numbers) ----
 #define V_MAX_XY   0.21f                                   // m/s
 #define W_MAX      0.5f                                    // rad/s
-#define WHEEL_CAP  (0.98f * (float)STEPS_PER_SEC_MAX / STEPS_PER_M)   // 0.2857 m/s
+#define WHEEL_CAP  (0.98f * (float)STEPS_PER_SEC_MAX / STEPS_PER_M)   // 0.5715 m/s
 #define TETHER_M   6.0f                                    // m from the power-up point (the ROS gate has a tighter, per-session one)
 const SlParams LIMITS = {V_MAX_XY, W_MAX, WHEEL_CAP, ROBOT_CENTER_TO_WHEEL_RADIUS};
 
@@ -75,7 +76,7 @@ struct Stepper {
   MoToStepper drv;
   uint8_t _stepPin, _dirPin;
   Stepper(uint8_t step, uint8_t dir) : drv(STEPS_PER_REV, STEPDIR), _stepPin(step), _dirPin(dir) {}
-  inline long pos() const { return drv.readSteps(); }
+  inline long pos() const { return MOTOR_DIR_SIGN * drv.readSteps(); }
 
   void setup() {
     drv.attach(_stepPin, _dirPin);
@@ -84,7 +85,7 @@ struct Stepper {
   }
 
   void setLinearVelocity(float v_mps) {
-    float sps = v_mps * STEPS_PER_M;
+    float sps = MOTOR_DIR_SIGN * v_mps * STEPS_PER_M;
     if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps);   // never reached: sl_limit keeps wheels under the cap
     if (fabs(sps) < 1e-3) {
       drv.rotate(0);

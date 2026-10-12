@@ -7,7 +7,7 @@ robot:
   mass_kg: 5.0                    # confirm: CAD review estimate (printed parts x fill factor); weigh the real robot
   com_height_m: 0.071
   wheel_radius_m: 0.0297          # effective rolling radius used by the firmware
-  steps_per_rev: 3200             # 200 x 1/16 microstep
+  steps_per_rev: 1600             # 200 x 1/8 microstep (TMC2209 drivers)
   wheel_steps_per_sec_max: 5000   # firmware STEPS_PER_SEC_MAX (MobaTools on a Mega)
   fw_accel_xy: 0.40               # firmware ACCEL_XY  (m/s^2)
   fw_decel_xy: 0.55               # firmware DECEL_XY
@@ -34,6 +34,7 @@ environment:
   typical_wall_clearance_goal_m: 0.45
 policy:                           # human decisions; changing these changes the safety envelope
   w_max_rad_s: 0.5
+  v_max_cap_m_s: 0.21             # human speed cap, independent of the wheel cap (matches V_MAX_XY in the safe firmware)
   wheel_cap_fraction: 0.98        # use at most 98 % of the firmware wheel-speed cap
   lateral_margin_m: 0.03          # sideways clearance kept while driving along a wall (on top of the robot circle)
   stop_margin_m: 0.05             # distance still left between the robot circle and an obstacle when stopped

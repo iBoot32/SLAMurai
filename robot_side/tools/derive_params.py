@@ -44,7 +44,7 @@ def derive(cad, prof):
     w_max = pol['w_max_rad_s']
     put('w_max_rad_s', w_max, 'policy')
     v_max = pol['wheel_cap_fraction'] * cap - Rw * w_max
-    v_max = math.floor(v_max * 100) / 100.0
+    v_max = min(math.floor(v_max * 100) / 100.0, pol.get('v_max_cap_m_s', v_max))
     put('v_max_m_s', v_max, 'wheel_cap_fraction*cap - R_wheel*w_max: the fastest wheel runs at |v| + R*w along its drive direction')
 
     a_fw = min(r['fw_decel_xy'], r['usable_accel_ms2'])

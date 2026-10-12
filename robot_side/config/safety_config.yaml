@@ -28,7 +28,7 @@ lidar:
   range_min_m: 0.15
   scan_plane_height_m: 0.1987
   self_return_radius_m: 0.1
-lock_sha256: 5f295066d3816c55
+lock_sha256: 2efc5771b56c4b20
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185
@@ -46,6 +46,6 @@ wheel_azimuths_deg:
 - 135.0
 - 225.0
 - 315.0
-wheel_cap_eff_m_s: 0.2857
+wheel_cap_eff_m_s: 0.5715
 wheel_centre_radius_m: 0.133
-wheel_speed_cap_m_s: 0.2916
+wheel_speed_cap_m_s: 0.5832
