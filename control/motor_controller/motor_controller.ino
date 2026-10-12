@@ -6,8 +6,9 @@
 // Robot params
 #define WHEEL_RADIUS_M 0.0297
 #define ROBOT_CENTER_TO_WHEEL_RADIUS 0.1325
-#define STEPS_PER_REV 3200
+#define STEPS_PER_REV 1600
 #define STEPS_PER_SEC_MAX 5000
+#define MOTOR_DIR_SIGN -1      // TMC2209 drivers spin every motor the opposite way to the old DRV8825: -1 flips all wheels (and their step counts)
 const float STEPS_PER_M = (float)STEPS_PER_REV / (2.0f * (float)M_PI * WHEEL_RADIUS_M);
 
 // Kinematic Acceleration & Deceleration Limits
@@ -42,7 +43,7 @@ struct Stepper {
   MoToStepper drv;
   uint8_t _stepPin, _dirPin;
   Stepper(uint8_t step, uint8_t dir) : drv(STEPS_PER_REV, STEPDIR), _stepPin(step), _dirPin(dir) {}
-  inline long pos() const { return drv.readSteps(); }
+  inline long pos() const { return MOTOR_DIR_SIGN * drv.readSteps(); }
 
   void setup() { 
     drv.attach(_stepPin, _dirPin); 
@@ -51,7 +52,7 @@ struct Stepper {
   }
 
   void setLinearVelocity(float v_mps) {
-    float sps = v_mps * STEPS_PER_M;
+    float sps = MOTOR_DIR_SIGN * v_mps * STEPS_PER_M;
     if (fabs(sps) > STEPS_PER_SEC_MAX) sps = copysign(STEPS_PER_SEC_MAX, sps);
     if (fabs(sps) < 1e-3) {
       drv.rotate(0);
@@ -149,51 +150,44 @@ void loop() {
     stepperRight.setLinearVelocity(vRight);
   }
 
-  // ---- ODOM UPDATE (Runs as fast as possible) ----
-  long pFront = stepperFront.pos();
-  long pLeft = stepperLeft.pos();
-  long pBack = stepperBack.pos();
-  long pRight = stepperRight.pos();
-
-  long dFront = pFront - lastFront;
-  long dLeft = pLeft - lastLeft;
-  long dBack = pBack - lastBack;
-  long dRight = pRight - lastRight;
-  lastFront = pFront; lastLeft = pLeft; lastBack = pBack; lastRight = pRight;
-
-  float sFront = (float)dFront / STEPS_PER_M;
-  float sLeft = (float)dLeft / STEPS_PER_M;
-  float sBack = (float)dBack / STEPS_PER_M;
-  float sRight = (float)dRight / STEPS_PER_M;
-
-  float dx_b = ( sLeft - sRight ) * 0.5f;
-  float dy_b = (-sFront + sBack ) * 0.5f;
-  float dyaw = -(sFront + sLeft + sBack + sRight) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
-
-  dx_b_sum += dx_b;
-  dy_b_sum += dy_b;
-  dyaw_sum += dyaw;
-
-  float cy = cos(pose_yaw);
-  float sy = sin(pose_yaw);
-  pose_x += cy * dx_b - sy * dy_b;
-  pose_y += sy * dx_b + cy * dy_b;
-  pose_yaw += dyaw;
-
-  // ---- SERIAL ODOM SEND ----
+  // ---- ODOM CALCULATION & SEND (Timed) ----
   now = micros();
   if (now - last_odom_send_time >= ODOM_SEND_PERIOD_US) {
     float dt_odom = (now - last_odom_send_time) / 1000000.0f;
     last_odom_send_time = now;
 
+    long pFront = stepperFront.pos();
+    long pLeft = stepperLeft.pos();
+    long pBack = stepperBack.pos();
+    long pRight = stepperRight.pos();
+
+    long dFront = pFront - lastFront;
+    long dLeft = pLeft - lastLeft;
+    long dBack = pBack - lastBack;
+    long dRight = pRight - lastRight;
+    lastFront = pFront; lastLeft = pLeft; lastBack = pBack; lastRight = pRight;
+
+    float sFront = (float)dFront / STEPS_PER_M;
+    float sLeft = (float)dLeft / STEPS_PER_M;
+    float sBack = (float)dBack / STEPS_PER_M;
+    float sRight = (float)dRight / STEPS_PER_M;
+
+    float dx_b = ( sLeft - sRight ) * 0.5f;
+    float dy_b = (-sFront + sBack ) * 0.5f;
+    float dyaw = -(sFront + sLeft + sBack + sRight) * (1.0f / (4.0f * ROBOT_CENTER_TO_WHEEL_RADIUS));
+
+    float cy = cos(pose_yaw);
+    float sy = sin(pose_yaw);
+    pose_x += cy * dx_b - sy * dy_b;
+    pose_y += sy * dx_b + cy * dy_b;
+    pose_yaw += dyaw;
+
     float x_mm = roundf(pose_x * 1000.0f) / 1000.0f;
     float y_mm = roundf(pose_y * 1000.0f) / 1000.0f;
     float yaw_r = roundf(pose_yaw * 1000.0f) / 1000.0f;
-    float vel_x = dx_b_sum / dt_odom;
-    float vel_y = dy_b_sum / dt_odom;
-    float vel_w = dyaw_sum / dt_odom;
-
-    dx_b_sum = 0; dy_b_sum = 0; dyaw_sum = 0;
+    float vel_x = dx_b / dt_odom;
+    float vel_y = dy_b / dt_odom;
+    float vel_w = dyaw / dt_odom;
 
     Serial.print(x_mm, 3); Serial.print(',');
     Serial.print(y_mm, 3); Serial.print(',');
