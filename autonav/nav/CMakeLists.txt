@@ -11,19 +11,6 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# robot_side: safety gate (only publisher of /cmd_vel_safe) and its pure-python core, installed next to each other so
-# `import safety_core` works from the script directory
-install(
-  PROGRAMS ../../robot_side/safety/safety_gate.py ../../robot_side/safety/safety_core.py
-           ../../robot_side/tools/nav2_manager.py ../../robot_side/tools/limits_check.py ../../robot_side/tools/nav2_proc.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-install(
-  DIRECTORY ../../robot_side/config/
-  DESTINATION share/${PROJECT_NAME}/autotune_config
-  FILES_MATCHING PATTERN "safety_config.*" PATTERN "zone.npz" PATTERN "commissioned.json"
-)
-
 # Install directories
 install(
   DIRECTORY launch params urdf config maps
