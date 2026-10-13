@@ -1,8 +1,0 @@
-# The tuning zone: where the robot may drive during automatic tuning.  YOU draw it; the safety gate enforces it.
-# Coordinates are map-frame metres (the map yaml's origin/resolution apply).  Walk the zone first: no stairs, drops,
-# thresholds, cables, pets' bowls, glass doors - anything the 2-D lidar (scan plane 0.199 m) cannot see MUST be a keep-out.
-map: ../../autonav/nav/maps/firstfloor_360.yaml
-seed: auto                    # a point of known-safe floor; 'auto' = most open spot of the largest area (check it!)
-include_polygons: []          # optional: restrict to [[x, y], ...] polygons
-keepout_polygons: []          # e.g. - [[1.0, 1.0], [2.0, 1.0], [2.0, 2.0], [1.0, 2.0]]
-clearance_m: 0.30             # zone centre points stay at least this far from every wall / unknown cell

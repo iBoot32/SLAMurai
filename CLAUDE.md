@@ -11,9 +11,6 @@ Noting problems for discussion is another.
 - `robotlab/profiles/*.yaml` everything robot-specific: topics, types, frames, how goals are sent, how Nav2 restarts, where the
   safety status comes from, where the Nav2 parameters are. A new robot means a new profile.
 - `recipes/` example experiment scripts the agent copies and edits.
-- `robot_side/` runs on the robot: the safety gate and its core, the Nav2 restart helper, human tools (commission, approve, arm).
-  It is swappable. The library only knows it through the profile.
-- `tests/` one folder.
 
 ## Rules
 1. The library is glue plus common helpers. It sends goals, reads data, sets Nav2 parameters, records logs, and offers sweep,
@@ -22,10 +19,9 @@ Noting problems for discussion is another.
 3. No speed, range or pose limits in the library. The agent's script picks values. The safety layer enforces limits.
 4. The library never publishes velocity.
 5. Tuning is live, on the real robot, in the real environment. No simulation.
-6. Tests: simple input and output, plus light integration against a fake rosbridge or the real firmware code. No fuzzing, no
-   regression suites, no rigs.
+6. No test suite in this repo. Check changes with a recipe against the robot.
 7. Minimal comments and docs. Short code.
-8. Do not change the original SLAMurai folders beyond the small marked edits in `docs/CHANGES_IN_COPY.md`.
+8. Do not change the original SLAMurai folders. This repo is the original robot code plus `robotlab/` and `recipes/`.
 9. Ask the user before restructuring or deleting.
 
 ## Assumptions that stay

@@ -5,9 +5,9 @@ writes a script on top of this library, runs it on the robot, analyses the data 
 
 ```
 agent script (recipes/)  ->  lab.py  ->  robot.py  --rosbridge/Wi-Fi-->  robot
-                              sweep       goals, streams, restart            safety gate (robot_side/safety)
-                              compare     all names from profiles/*.yaml     Nav2 restart (robot_side/tools/nav2_manager.py)
-                              optimize                                       firmware limits (control/)
+                              sweep       goals, streams, restart            safety layer (per profile)
+                              compare     all names from profiles/*.yaml     Nav2 restart (per profile)
+                              optimize                                       firmware limits
                               logs
 ```
 
