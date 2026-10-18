@@ -122,6 +122,7 @@ class SafetyCore(object):
         self.last_hb = -1e9
         self.tether_origin = None
         self.P = np.zeros((0, 2))
+        self.sector_m = [None] * 12
         self.unknown_ang = np.zeros(0)
         self.n_beams = 0
         self.scan_rx = -1e9
@@ -201,6 +202,13 @@ class SafetyCore(object):
         a = ang[valid] + self.lidar_yaw
         P = np.stack([r[valid] * np.cos(a), r[valid] * np.sin(a)], axis=1) + self.lidar_off
         self.P = P
+        # nearest return per 30 deg sector, base frame, 0 = front, counter-clockwise (published in every status message)
+        if len(P):
+            ang_s = (np.degrees(np.arctan2(P[:, 1], P[:, 0])) % 360.0 // 30).astype(int)
+            d_s = np.hypot(P[:, 0], P[:, 1])
+            self.sector_m = [round(float(d_s[ang_s == k].min()), 2) if (ang_s == k).any() else None for k in range(12)]
+        else:
+            self.sector_m = [None] * 12
         self.unknown_ang = (ang[unknown] + self.lidar_yaw)
         self.n_beams = n
         self.scan_rx = now
@@ -350,7 +358,7 @@ class SafetyCore(object):
     # ------------------------------------------------------------------ main step
     def step(self, now):
         c = self.c
-        info = {'state': 'DISARMED', 'limit': '', 'faults': sorted(self.faults), 'cmd': self.cmd}
+        info = {'state': 'DISARMED', 'limit': '', 'faults': sorted(self.faults), 'cmd': self.cmd, 'sector_m': self.sector_m}
         dt = 0.05 if self.last_step is None else min(0.2, max(0.005, now - self.last_step))
         self.last_step = now
         self.stats['steps'] += 1
@@ -504,9 +512,4 @@ class SafetyCore(object):
                 limit = limit or 'rot_block'
         info['min_clear'] = (float(np.hypot(self.P[:, 0], self.P[:, 1]).min()) - self.R) if len(self.P) else float('inf')
         info['t_lat'] = t_lat
-        if len(self.P):                                  # nearest return per 30 deg sector, base frame, 0 = front, counter-clockwise
-            ang = np.degrees(np.arctan2(self.P[:, 1], self.P[:, 0])) % 360.0
-            d = np.hypot(self.P[:, 0], self.P[:, 1])
-            info['sector_m'] = [round(float(d[(ang // 30).astype(int) == k].min()), 2) if ((ang // 30).astype(int) == k).any() else None
-                                for k in range(12)]
         return finish((vx, vy, w), limit)
