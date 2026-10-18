@@ -39,7 +39,7 @@ policy:                           # human decisions; changing these changes the 
   wheel_cap_fraction: 0.98        # use at most 98 % of the firmware wheel-speed cap
   lateral_margin_m: 0.03          # sideways clearance kept while driving along a wall (on top of the robot circle)
   stop_margin_m: 0.05             # distance still left between the robot circle and an obstacle when stopped
-  dyn_obstacle_speed_m_s: 0.25    # something moving toward the robot (pet, child, door) is allowed for in the stop distance
+  dyn_obstacle_speed_m_s: 0.0     # static world: no allowance for something moving toward the robot (was 0.25)
   brake_decel_fraction: 0.9       # the gate assumes it gets this fraction of the firmware decel
   unknown_creep_m_s: 0.05
   blind_wedge_speed_cap_m_s: 0.15

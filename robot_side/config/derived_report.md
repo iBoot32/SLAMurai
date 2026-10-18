@@ -15,8 +15,8 @@
 - `stop_distance_at_vmax_m` = 0.2532  - v*t + v^2/(2a), t = fixed + scan_time + 0.05 s typical scan transport age
 - `lateral_margin_m` = 0.03  - policy: extra half-width of the swept corridor
 - `stop_margin_m` = 0.05  - policy
-- `dyn_obstacle_speed_m_s` = 0.25  - policy
-- `gap_needed_at_vmax_m` = 0.573  - free distance beyond the robot circle needed to run at v_max
+- `dyn_obstacle_speed_m_s` = 0.0  - policy
+- `gap_needed_at_vmax_m` = 0.303  - free distance beyond the robot circle needed to run at v_max
 - `wheel_azimuths_deg` = [0.0, 90.0, 180.0, 270.0]
 - `wheel_cap_eff_m_s` = 0.5715
 - `unknown_creep_m_s` = 0.05
@@ -84,4 +84,4 @@
 - `nav.samples`: trajectory count limited so ~25725 pose evaluations x 2.0 us stay inside 55 % of one control period (55 ms)
 - `nav.amcl_update_min_d`: >= distance travelled per scan at v_max (0.050 m); finer only costs CPU
 
-safety_config lock: `f32c42fe774506b2`
+safety_config lock: `4e1eae92fb1dafdf`
