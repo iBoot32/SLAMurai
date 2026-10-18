@@ -5,7 +5,7 @@ the robot, so the gate refuses to be approved until this check has passed (tools
 
 Procedure (robot on the floor, motors NOT powered or wheels off the ground):
   1. start the lidar only   2. python3 commission.py
-  3. put a box/book ~0.4 m from the robot centre IN FRONT (the side with the camera) when asked, then LEFT, then BEHIND.
+  3. put a box/book ~0.4 m from the robot centre IN FRONT (the side with the camera) when asked, then LEFT (front fixes the rotation, left fixes the handedness).
 The script reads /scan, applies frame_yaw_rad, and checks that the nearest return is in the sector you were asked for.
 On success it writes config/commissioned.json {yaw, utc, user}.  Also asks you to confirm by hand:
   * wheel directions: command +x in cmdvel_gui with the robot lifted - every wheel must drive the robot forward
@@ -67,9 +67,8 @@ def main():
         return last.get('m')
 
     passed = True
-    for name, deg in (('IN FRONT (camera side)', 0.0), ('on the LEFT (robot facing the camera side, left hand)', 90.0),
-                      ('BEHIND', 180.0)):
-        input('Put a box about 0.4 m from the robot centre %s, clear everything else within 2 m, press Enter: ' % name)
+    for name, deg in (('IN FRONT (camera side)', 0.0), ('on the LEFT (robot facing the camera side, left hand)', 90.0)):
+        input('Put a box 0.2 to 1 m from the robot centre %s, clear everything else within 2 m, press Enter: ' % name)
         m = newest()
         if m is None:
             print('no /scan received')
