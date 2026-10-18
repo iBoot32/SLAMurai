@@ -110,6 +110,7 @@ class SafetyCore(object):
         # swept-corridor radius: guard circle + sideways margin, so a path that drifts a little (wheel slip, odometry scale,
         # lidar noise) still clears walls that the robot is driving along
         self.R_eff = self.R + float(cfg.get('lateral_margin_m', 0.03))
+        self.stop_margin = float(cfg['stop_margin_m'])
         self.graze_r = self.R + 0.005        # a return already inside the corridor may be passed at least this far from the centre
         self.reset_state()
 
@@ -251,6 +252,11 @@ class SafetyCore(object):
         else:
             self.mm_bad = 0
         self.mm_base = cur
+
+    def set_clearance(self, centre_to_object_m):
+        """Stop with the robot centre this far from a lidar object (the same number the zone editor keeps from walls).
+        Never closer than 2 cm beyond the corridor circle, so the physical hull stays clear."""
+        self.stop_margin = max(0.02, float(centre_to_object_m) - self.R_eff)
 
     def on_cmd(self, now, vx, vy, w):
         self.cmd = (vx, vy, w)
@@ -442,7 +448,7 @@ class SafetyCore(object):
             gs = self._scan_gap(u, min(0.10, 0.5 * s * abs(w) * horizon * horizon))
             # something moving toward us matters only while we are moving (a standing robot cannot avoid it anyway)
             vo = c['dyn_obstacle_speed_m_s'] * min(1.0, s / 0.10)
-            v_s = stop_safe_speed(gs, t_lat, a_b, c['stop_margin_m'], vo)
+            v_s = stop_safe_speed(gs, t_lat, a_b, self.stop_margin, vo)
             info['gap_scan'] = gs
             if v_s < v_allow:
                 v_allow, why = v_s, 'obstacle'

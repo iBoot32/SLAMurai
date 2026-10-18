@@ -17,6 +17,7 @@ from tkinter import ttk
 from PIL import Image, ImageDraw
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import OccupancyGrid
+from std_msgs.msg import Float32
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
 
@@ -35,6 +36,7 @@ class ZoneEditor(Node):
         latched = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
                              reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE)
         self.pub = self.create_publisher(OccupancyGrid, '/safety/zone', latched)
+        self.pub_clear = self.create_publisher(Float32, '/safety/clearance', latched)
         self.create_subscription(OccupancyGrid, '/map', self.on_map, latched)
         self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.on_pose, 5)
         self.free = self.paint = self.meta = None
@@ -273,6 +275,7 @@ class ZoneEditor(Node):
         m.info.origin.orientation.w = 1.0
         m.data = (al.astype(np.int8) * 100).ravel().tolist()
         self.pub.publish(m)
+        self.pub_clear.publish(Float32(data=float(self.clear.get())))
         try:
             os.makedirs(os.path.dirname(SAVE), exist_ok=True)
             np.savez_compressed(SAVE, allowed=al, paint=self.paint, resolution=res, origin_x=ox, origin_y=oy)

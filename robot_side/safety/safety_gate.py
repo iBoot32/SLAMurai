@@ -31,7 +31,7 @@ from geometry_msgs.msg import Twist, PoseWithCovarianceStamped   # noqa: E402
 from nav_msgs.msg import Odometry, OccupancyGrid   # noqa: E402
 from zone_build import zone_from_allowed      # noqa: E402
 from sensor_msgs.msg import LaserScan         # noqa: E402
-from std_msgs.msg import String, Int32        # noqa: E402
+from std_msgs.msg import String, Int32, Float32        # noqa: E402
 
 GATE_HZ = 20.0
 
@@ -85,6 +85,10 @@ class SafetyGate(Node):
         self.create_subscription(OccupancyGrid, '/safety/zone', self.on_zone,
                                  QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
                                             reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE))
+        # clearance from the zone editor: wanted distance from the robot centre to a wall or a lidar object (m)
+        self.create_subscription(Float32, '/safety/clearance', self.on_clearance,
+                                 QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+                                            reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE))
         self.create_timer(1.0 / GATE_HZ, self.on_timer)
         self.status_div = 0
         self.log('gate started, config %s' % cfg_hash)
@@ -120,6 +124,10 @@ class SafetyGate(Node):
         p = m.pose.pose
         c = m.pose.covariance
         self.core.on_map_pose(self.now(), p.position.x, p.position.y, float(yaw_of(p.orientation)), c[0], c[7])
+
+    def on_clearance(self, m):
+        self.core.set_clearance(float(m.data))
+        self.log('clearance %.2f m (stop margin %.3f m)' % (m.data, self.core.stop_margin))
 
     def on_zone(self, m):
         w, h = m.info.width, m.info.height
