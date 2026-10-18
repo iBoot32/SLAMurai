@@ -29,6 +29,9 @@ def generate_launch_description():
         }.items()
     )
 
+    rviz = [launch_ros.actions.Node(package='rviz2', node_executable='rviz2', node_name='rviz2', output='screen',
+            arguments=['-d', os.path.join(slamurai_nav_share_dir, 'config', 'scan.rviz')])] if os.environ.get('DISPLAY') else []
+
     return LaunchDescription(
         [
             DeclareLaunchArgument('output', default_value='screen', description='Output mode'),
@@ -75,6 +78,6 @@ def generate_launch_description():
              ),
 
             rplidar_launch
-        ]
+        ] + rviz
     )
 
