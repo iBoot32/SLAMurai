@@ -23,7 +23,7 @@ Noting problems for discussion is another.
 5. Tuning is live, on the real robot, in the real environment. No simulation.
 6. No test suite in this repo. Check changes with a recipe against the robot.
 7. Minimal comments and docs. Short code.
-8. Keep the original robot code as is. This repo adds only `robotlab/`, `recipes/` and `robot_side/`, plus the `safety` launch argument and the `cmd_topic` parameter.
+8. Keep the original robot code as is. This repo adds only `robotlab/`, `recipes/` and `robot_side/`, plus the `safety` launch argument, the `cmd_topic` parameter and a serial-deadlock fix in `main.py` (drain input, write timeout).
 9. Ask the user before restructuring or deleting.
 
 ## Assumptions that stay

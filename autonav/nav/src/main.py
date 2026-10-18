@@ -40,12 +40,17 @@ class CmdVelSerialOdom(Node):
     # Writes data via USB serial to be received by Arduino
     def cmd_vel_callback(self, msg: Twist):
         cmd = f"{msg.linear.x},{msg.linear.y},{msg.angular.z}\n"
-        self.ser.write(cmd.encode())
+        try:
+            self.ser.write(cmd.encode())
+        except serial.SerialTimeoutException:
+            pass   # a stuck write must not freeze the odometry timer
 
     def publish_odom(self):
         # Read any available odom serial line from Arduino
         try:
             line = self.ser.readline().decode().strip()
+            while self.ser.in_waiting:   # drain the backlog (the Arduino blocks on Serial.print if this side falls behind)
+                line = self.ser.readline().decode().strip() or line
             if line:
                 parts = line.split(',')
                 if len(parts) == 6:
@@ -113,7 +118,7 @@ def main():
     baud = 115200
     hz = 50.0
 
-    ser = serial.Serial(port=port, baudrate=baud, timeout=0.01)
+    ser = serial.Serial(port=port, baudrate=baud, timeout=0.01, write_timeout=0.05)
 
     time.sleep(3)
     ser.reset_input_buffer()
