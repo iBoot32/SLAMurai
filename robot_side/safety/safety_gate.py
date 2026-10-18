@@ -26,9 +26,10 @@ from safety_core import SafetyCore, Zone      # noqa: E402
 import numpy as np                            # noqa: E402
 import rclpy                                  # noqa: E402
 from rclpy.node import Node                   # noqa: E402
-from rclpy.qos import QoSProfile, qos_profile_sensor_data   # noqa: E402
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, qos_profile_sensor_data   # noqa: E402
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped   # noqa: E402
-from nav_msgs.msg import Odometry             # noqa: E402
+from nav_msgs.msg import Odometry, OccupancyGrid   # noqa: E402
+from zone_build import zone_from_allowed      # noqa: E402
 from sensor_msgs.msg import LaserScan         # noqa: E402
 from std_msgs.msg import String, Int32        # noqa: E402
 
@@ -60,8 +61,9 @@ def load_config(path, approved_path):
 
 
 class SafetyGate(Node):
-    def __init__(self, cfg, cfg_hash, zone, token_hash, log_path):
+    def __init__(self, cfg, cfg_hash, zone, token_hash, log_path, auto_arm=False):
         super().__init__('safety_gate')
+        self.auto_arm, self.auto_try = auto_arm, 0.0
         self.core = SafetyCore(cfg, zone)
         self.cfg_hash = cfg_hash
         self.token_hash = token_hash
@@ -79,6 +81,10 @@ class SafetyGate(Node):
         self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.on_amcl, qos_profile_sensor_data)
         self.create_subscription(String, '/safety/operator', self.on_operator, QoSProfile(depth=10))
         self.create_subscription(String, '/safety/heartbeat', self.on_heartbeat, QoSProfile(depth=10))
+        # live zone from the zone editor: OccupancyGrid, 100 = allowed. Latched, so a restarted gate gets the last one.
+        self.create_subscription(OccupancyGrid, '/safety/zone', self.on_zone,
+                                 QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+                                            reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE))
         self.create_timer(1.0 / GATE_HZ, self.on_timer)
         self.status_div = 0
         self.log('gate started, config %s' % cfg_hash)
@@ -115,6 +121,15 @@ class SafetyGate(Node):
         c = m.pose.covariance
         self.core.on_map_pose(self.now(), p.position.x, p.position.y, float(yaw_of(p.orientation)), c[0], c[7])
 
+    def on_zone(self, m):
+        w, h = m.info.width, m.info.height
+        allowed = (np.asarray(m.data, dtype=np.int8).reshape(h, w) > 50)
+        if not allowed.any():
+            self.log('zone message ignored: nothing allowed')
+            return
+        self.core.zone = zone_from_allowed(allowed, m.info.resolution, m.info.origin.position.x, m.info.origin.position.y)
+        self.log('zone updated: %.1f m2 allowed' % (allowed.sum() * m.info.resolution ** 2))
+
     def on_heartbeat(self, m):
         self.core.heartbeat(self.now())
 
@@ -142,6 +157,16 @@ class SafetyGate(Node):
 
     # --- 20 Hz output
     def on_timer(self):
+        now = self.now()
+        if self.auto_arm:                       # the launch flag is the arming: armed whenever the inputs are healthy
+            c = self.core
+            if not c.armed and not c.faults and now - self.auto_try > 1.0:
+                self.auto_try = now
+                ok, msg = c.arm(now, float(c.c['max_session_s']))
+                if ok:
+                    self.log('auto-armed')
+            elif c.armed and c.session_end - now < 300.0:
+                c.session_end = now + float(c.c['max_session_s'])
         out, info = self.core.step(self.now())
         tw = Twist()
         tw.linear.x, tw.linear.y, tw.angular.z = float(out[0]), float(out[1]), float(out[2])
@@ -180,17 +205,22 @@ def main(argv=None):
     ap.add_argument('--config', default=os.path.join(here, '..', 'config', 'safety_config.yaml'))
     ap.add_argument('--approved', default=os.path.join(here, '..', 'config', 'safety_config.approved'))
     ap.add_argument('--zone', default=None)
+    ap.add_argument('--auto-arm', action='store_true', help='arm by itself whenever scan and odometry are fresh and no fault is latched')
     ap.add_argument('--token-file', default=None, help='file whose content is the operator token; only its sha256 is kept')
     ap.add_argument('--log', default='/tmp/safety_gate.log')
     ap.add_argument('--no-approval-check', action='store_true', help='development only')
     a, ros_args = ap.parse_known_args(argv if argv is not None else sys.argv[1:])
     cfg, h = load_config(a.config, None if a.no_approval_check else a.approved)
     zone = Zone.load(a.zone) if a.zone else None
+    live = os.path.expanduser('~/.slamurai/zone_live.npz')           # written by the zone editor, restored at start
+    if zone is None and os.path.exists(live):
+        d = np.load(live)
+        zone = zone_from_allowed(d['allowed'], float(d['resolution']), float(d['origin_x']), float(d['origin_y']))
     token_hash = hashlib.sha256(open(a.token_file).read().strip().encode()).hexdigest() if a.token_file else None
     if token_hash is None:
         print('WARNING: no --token-file: anybody on the ROS graph can arm the gate', file=sys.stderr)
     rclpy.init(args=ros_args)
-    node = SafetyGate(cfg, h, zone, token_hash, a.log)
+    node = SafetyGate(cfg, h, zone, token_hash, a.log, a.auto_arm)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

@@ -13,7 +13,8 @@ install(
 
 # robot_side: safety gate (only publisher of /cmd_vel_safe), Nav2 restart helper, and its approved config
 install(
-  PROGRAMS ../../robot_side/safety/safety_gate.py ../../robot_side/safety/safety_core.py
+  PROGRAMS ../../robot_side/safety/safety_gate.py ../../robot_side/safety/safety_core.py ../../robot_side/safety/zone_build.py
+           ../../robot_side/tools/zone_editor.py
            ../../robot_side/tools/nav2_manager.py ../../robot_side/tools/limits_check.py ../../robot_side/tools/nav2_proc.py
   DESTINATION lib/${PROJECT_NAME}
 )

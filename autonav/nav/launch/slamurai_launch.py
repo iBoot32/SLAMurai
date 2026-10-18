@@ -172,18 +172,22 @@ def generate_launch_description():
     # safety:=false (default) is the stock setup: Nav2 here, main.py on /cmd_vel.
     # safety:=true: the gate is the only publisher of /cmd_vel_safe, main.py listens there, and Nav2 is started and restarted
     # by nav2_manager: it starts with the stock nav2_params.yaml, and again with new parameters when the PC sends them
-    # (Dashing reads parameters only at start-up). The gate starts disarmed.
+    # (Dashing reads parameters only at start-up). The gate arms itself when its inputs are healthy; the zone editor opens when a display exists.
     def safety_setup(context):
         if LaunchConfiguration('safety').perform(context).lower() != 'true':
             return [launch_ros.actions.Node(package='slamurai_nav', node_executable='main.py', node_name='main', output='screen'),
                     nav2_launch]
         cfg = os.path.join(slamurai_nav_share_dir, 'autotune_config')
-        gate_args = ['--config', os.path.join(cfg, 'safety_config.yaml'), '--approved', os.path.join(cfg, 'safety_config.approved')]
+        gate_args = ['--auto-arm', '--config', os.path.join(cfg, 'safety_config.yaml'), '--approved', os.path.join(cfg, 'safety_config.approved')]
         if os.path.exists(os.path.join(cfg, 'zone.npz')):
             gate_args += ['--zone', os.path.join(cfg, 'zone.npz')]
         if os.path.exists('/etc/slamurai/operator_token'):
             gate_args += ['--token-file', '/etc/slamurai/operator_token']
-        return [
+        editor = []
+        if os.environ.get('DISPLAY'):                    # the zone editor needs a screen (ssh -Y works)
+            editor = [launch_ros.actions.Node(package='slamurai_nav', node_executable='zone_editor.py', node_name='zone_editor',
+                                              output='screen')]
+        return editor + [
             launch_ros.actions.Node(package='slamurai_nav', node_executable='main.py', node_name='main', output='screen',
                                     parameters=[{'cmd_topic': '/cmd_vel_safe'}]),
             launch_ros.actions.Node(package='slamurai_nav', node_executable='safety_gate.py', node_name='safety_gate',

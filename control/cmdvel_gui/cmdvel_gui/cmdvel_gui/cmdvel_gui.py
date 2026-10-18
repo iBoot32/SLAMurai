@@ -11,6 +11,7 @@ import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage, Image
+from std_msgs.msg import String
 
 try:
     from PIL import Image as PILImage
@@ -38,6 +39,10 @@ class CmdVelGUI(Node):
         self.max_ang = float(self.get_parameter('max_angular').value)
         topic = self.get_parameter('topic').value
         self.pub = self.create_publisher(Twist, topic, 10)
+        # with the safety gate running (safety:=true) this window is the operator's dead-man: it sends the heartbeat while open
+        self.hb_pub = self.create_publisher(String, '/safety/heartbeat', 10)
+        self.hb_t = self.chk_t = 0.0
+        self.gate_seen = False
         self.safe, self.safe_t = (0.0, 0.0, 0.0), 0.0
         self.create_subscription(Twist, self.get_parameter('feedback_topic').value, self.on_safe, 10)
         self.cam_sub, self.cam_msg, self.cam_shown = None, None, 0.0
@@ -326,6 +331,13 @@ class CmdVelGUI(Node):
             rclpy.spin_once(self, timeout_sec=0)
         if self.cam_on.get():
             self.show_frame()
+        now = time.monotonic()
+        if now - self.chk_t > 2.0:
+            self.chk_t = now
+            self.gate_seen = any(n == '/safety/status' for n, _ in self.get_topic_names_and_types())
+        if self.gate_seen and now - self.hb_t > 0.4:
+            self.hb_t = now
+            self.hb_pub.publish(String(data='hb'))
         self.cmd = self.command()
         m = Twist()
         m.linear.x, m.linear.y, m.angular.z = self.cmd
