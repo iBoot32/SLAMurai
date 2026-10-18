@@ -233,6 +233,8 @@ class Robot(object):
 
     def restart_nav2(self, params, initial_pose=None):
         """Restart Nav2 with this parameter dict. Returns when Nav2 reports active."""
+        if 'restart' not in self.p:
+            raise RuntimeError('profile has no restart helper: restart Nav2 by hand with the new parameters')
         r = self.p['restart']
         rid = int(time.time() * 1000) % 10 ** 9
         self.restart_status = {}

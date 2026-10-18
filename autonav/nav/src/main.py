@@ -17,9 +17,10 @@ class CmdVelSerialOdom(Node):
         qos = QoSProfile(depth=10)
         qos.reliability = QoSReliabilityPolicy.BEST_EFFORT
 
+        self.declare_parameter('cmd_topic', '/cmd_vel')  # '/cmd_vel_safe' when the safety gate runs
         self.publisher = self.create_publisher(Odometry, '/odometry/raw', 10)
         self.subscriber = self.create_subscription(
-            Twist, '/cmd_vel', self.cmd_vel_callback, qos)
+            Twist, self.get_parameter('cmd_topic').value, self.cmd_vel_callback, qos)
 
         self.frame_id = "odom"
         self.child_frame_id = "base_link"
