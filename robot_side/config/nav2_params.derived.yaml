@@ -72,13 +72,13 @@ dwb_controller:
     controller_frequency: 10.0
     use_sim_time: false
     debug_trajectory_details: false
-    min_vel_x: -0.21
-    max_vel_x: 0.21
-    min_vel_y: -0.21
-    max_vel_y: 0.21
-    max_speed_xy: 0.21
+    min_vel_x: -0.35
+    max_vel_x: 0.35
+    min_vel_y: -0.35
+    max_vel_y: 0.35
+    max_speed_xy: 0.35
     min_speed_xy: 0.02
-    max_vel_theta: 0.5
+    max_vel_theta: 0.75
     min_speed_theta: 0.01
     acc_lim_x: 0.4
     acc_lim_y: 0.4
@@ -86,10 +86,10 @@ dwb_controller:
     decel_lim_x: -0.55
     decel_lim_y: -0.55
     decel_lim_theta: -2.0
-    vx_samples: 8
-    vy_samples: 8
+    vx_samples: 7
+    vy_samples: 7
     vtheta_samples: 5
-    sim_time: 2.3
+    sim_time: 1.8
     linear_granularity: 0.03
     angular_granularity: 0.025
     xy_goal_tolerance: 0.1
@@ -131,8 +131,8 @@ local_costmap:
       - nav2_costmap_2d::ObstacleLayer
       - nav2_costmap_2d::InflationLayer
       inflation_layer:
-        inflation_radius: 0.48
-        cost_scaling_factor: 5.67
+        inflation_radius: 0.74
+        cost_scaling_factor: 2.74
       obstacle_layer:
         enabled: true
       always_send_full_costmap: true
@@ -158,8 +158,8 @@ global_costmap:
       update_frequency: 2.0
       publish_frequency: 1.0
       inflation_layer:
-        inflation_radius: 0.49
-        cost_scaling_factor: 5.67
+        inflation_radius: 0.82
+        cost_scaling_factor: 2.74
       obstacle_layer:
         enabled: true
       always_send_full_costmap: true

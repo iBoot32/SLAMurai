@@ -8,7 +8,7 @@ blind_wedge_speed_cap_m_s: 0.15
 cmd_stale_s: 0.4
 dyn_obstacle_speed_m_s: 0.25
 fw_decel_xy_m_s2: 0.55
-gap_needed_at_vmax_m: 0.371
+gap_needed_at_vmax_m: 0.573
 heartbeat_timeout_s: 4.0
 latency_fixed_s: 0.12000000000000001
 lateral_margin_m: 0.03
@@ -22,19 +22,19 @@ lidar:
   range_min_m: 0.15
   scan_plane_height_m: 0.12
   self_return_radius_m: 0.1
-lock_sha256: ceb3bfc5bc543c5c
+lock_sha256: f32c42fe774506b2
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185
 scan_stale_s: 0.5
 scan_time_s: 0.2
-stop_distance_at_vmax_m: 0.1222
+stop_distance_at_vmax_m: 0.2532
 stop_margin_m: 0.05
 tether_hard_extra_m: 0.1
 tether_radius_m: 3.0
 unknown_creep_m_s: 0.05
-v_max_m_s: 0.21
-w_max_rad_s: 0.5
+v_max_m_s: 0.35
+w_max_rad_s: 0.75
 wheel_azimuths_deg:
 - 0.0
 - 90.0

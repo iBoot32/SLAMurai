@@ -34,8 +34,8 @@ environment:
   min_door_width_m: 0.80
   typical_wall_clearance_goal_m: 0.45
 policy:                           # human decisions; changing these changes the safety envelope
-  w_max_rad_s: 0.5
-  v_max_cap_m_s: 0.21             # human speed cap, independent of the wheel cap (matches V_MAX_XY in the safe firmware)
+  w_max_rad_s: 0.75
+  v_max_cap_m_s: 0.35             # human speed cap, independent of the wheel cap
   wheel_cap_fraction: 0.98        # use at most 98 % of the firmware wheel-speed cap
   lateral_margin_m: 0.03          # sideways clearance kept while driving along a wall (on top of the robot circle)
   stop_margin_m: 0.05             # distance still left between the robot circle and an obstacle when stopped
