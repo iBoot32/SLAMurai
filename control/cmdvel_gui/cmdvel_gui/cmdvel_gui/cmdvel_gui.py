@@ -2,6 +2,7 @@
 """Drive the robot by hand: on-screen joystick, keyboard, or exact values.
 Publishes /cmd_vel (the safety gate sits behind it). Every input falls back to zero when released."""
 import io
+import json
 import math
 import time
 import tkinter as tk
@@ -44,6 +45,8 @@ class CmdVelGUI(Node):
         self.hb_t = self.chk_t = 0.0
         self.gate_seen = False
         self.safe, self.safe_t = (0.0, 0.0, 0.0), 0.0
+        self.why = ''
+        self.create_subscription(String, '/safety/status', self.on_status, 1)
         self.create_subscription(Twist, self.get_parameter('feedback_topic').value, self.on_safe, 10)
         self.cam_sub, self.cam_msg, self.cam_shown = None, None, 0.0
         self.cam_w = int(self.get_parameter('camera_width').value)
@@ -326,6 +329,14 @@ class CmdVelGUI(Node):
             self.shown[w] = kw
             w.config(**kw)
 
+    def on_status(self, m):
+        try:
+            d = json.loads(m.data)
+            f = lambda k: 'clear' if d.get(k) is None else '%.2f m' % d[k]
+            self.why = '%s (obstacle %s, zone edge %s)' % (d.get('limit') or 'none', f('gap_scan'), f('gap_fence'))
+        except Exception:
+            self.why = ''
+
     def tick(self):
         for _ in range(10):
             rclpy.spin_once(self, timeout_sec=0)
@@ -353,7 +364,7 @@ class CmdVelGUI(Node):
         if not fresh:
             self.put(self.note, text='No safety gate output. Is it running?', fg=WARN)
         elif moving and any(abs(a - b) > 0.03 for a, b in zip(self.cmd, self.safe)):
-            self.put(self.note, text='Safety gate is limiting the motion.', fg=WARN)
+            self.put(self.note, text='Safety gate limiting: ' + self.why, fg=WARN)
         else:
             self.put(self.note, text='Ready' if not moving else 'Driving', fg=OK)
         self.root.after(50, self.tick)

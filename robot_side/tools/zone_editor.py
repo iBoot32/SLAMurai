@@ -63,8 +63,11 @@ class ZoneEditor(Node):
         ttk.Label(side, text='Brush radius (m)').pack(anchor='w', pady=(8, 0))
         tk.Scale(side, variable=self.size, from_=0.05, to=1.5, resolution=0.05, orient='horizontal', length=170).pack(anchor='w')
         ttk.Label(side, text='Wall clearance (m)').pack(anchor='w')
-        tk.Scale(side, variable=self.clear, from_=0.2, to=0.8, resolution=0.05, orient='horizontal', length=170,
-                 command=lambda _: self.changed()).pack(anchor='w')
+        sp = tk.Spinbox(side, textvariable=self.clear, from_=0.0, to=2.0, increment=0.05, format='%.2f', width=8,
+                        command=self.changed)
+        sp.pack(anchor='w')
+        sp.bind('<Return>', lambda e: self.changed())
+        sp.bind('<FocusOut>', lambda e: self.changed())
         ttk.Checkbutton(side, text='Apply even if the robot is outside', variable=self.anyway).pack(anchor='w', pady=(8, 0))
         for t, f in (('Rotate view', self.rotate), ('Undo', self.do_undo), ('Clear paint', self.clear_paint), ('No zone (whole map)', self.no_zone)):
             ttk.Button(side, text=t, command=f).pack(anchor='w', fill='x', pady=2)
@@ -243,6 +246,10 @@ class ZoneEditor(Node):
 
     def changed(self):
         if self.paint is None:
+            return
+        try:
+            self.clear.get()
+        except tk.TclError:
             return
         self.draw()
         al = self.allowed()
