@@ -129,6 +129,18 @@ Visualization Manager:
     Topic: /graph_visualization
     Value: true
     Queue Size: 100
+  - Class: rviz_default_plugins/Image
+    Enabled: true
+    Name: Camera
+    Topic: /camera/color/image_raw
+    Transport Hint: compressed
+    Queue Size: 2
+    Normalize Range: true
+    Min Value: 0
+    Max Value: 1
+    Median window: 5
+    Unreliable: false
+    Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

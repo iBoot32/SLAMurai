@@ -77,6 +77,14 @@ def generate_launch_description():
                  parameters=[toolbox_params_path],
              ),
 
+            launch_ros.actions.Node(
+                package='realsense2_camera', node_namespace='camera', node_name='camera', node_executable='realsense2_camera_node',
+                output='screen',
+                parameters=[{'enable_color': True, 'color_width': 424, 'color_height': 240, 'color_fps': 6.0,
+                             'enable_depth': False, 'enable_infra1': False, 'enable_infra2': False,
+                             'enable_gyro': False, 'enable_accel': False}],
+            ),
+
             rplidar_launch
         ] + rviz
     )
