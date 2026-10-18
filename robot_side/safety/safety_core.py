@@ -128,6 +128,7 @@ class SafetyCore(object):
         self.scan_rx = -1e9
         self.scan_count = 0
         self.contact_scans = 0
+        self.contact_clear_since = None
         self.odom = None               # (x, y, yaw, vx, vy, w)
         self.odom_rx = -1e9
         self.fw_flags = 0
@@ -218,6 +219,14 @@ class SafetyCore(object):
             self.contact_scans = self.contact_scans + 1 if float(d.min()) < self.contact_r else 0
         else:
             self.contact_scans = 0
+        if 'CONTACT' in self.faults:                     # contact is a stop while it lasts, not a latch: it clears 1 s after the return is gone
+            if self.contact_scans == 0:
+                self.contact_clear_since = self.contact_clear_since if self.contact_clear_since is not None else now
+                if now - self.contact_clear_since >= 1.0:
+                    del self.faults['CONTACT']
+                    self.contact_clear_since = None
+            else:
+                self.contact_clear_since = None
         if self.contact_scans >= 3 and self.armed:
             self._fault(now, 'CONTACT', 'scan return inside %.3f m for 3 scans' % self.contact_r)
 
