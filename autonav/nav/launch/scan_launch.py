@@ -85,6 +85,8 @@ def generate_launch_description():
                              'enable_gyro': False, 'enable_accel': False}],
             ),
 
+            ExecuteProcess(cmd=['python3', '/home/nvidia/ros2-ws/SLAMurai/robot_side/tools/camera_flip.py'], output='screen'),
+
             rplidar_launch
         ] + rviz
     )

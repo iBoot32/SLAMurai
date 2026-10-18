@@ -16,5 +16,8 @@ slam_toolbox:
     max_laser_range: 8.0
     do_loop_closing: true
     loop_search_maximum_distance: 3.0
+    loop_match_minimum_chain_size: 20
+    loop_match_minimum_response_coarse: 0.5
+    loop_match_minimum_response_fine: 0.6
     min_laser_range: 0.01
 

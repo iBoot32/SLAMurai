@@ -132,8 +132,7 @@ Visualization Manager:
   - Class: rviz_default_plugins/Image
     Enabled: true
     Name: Camera
-    Topic: /camera/color/image_raw
-    Transport Hint: compressed
+    Topic: /camera/color/image_upright
     Queue Size: 2
     Normalize Range: true
     Min Value: 0
