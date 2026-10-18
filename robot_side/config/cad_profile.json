@@ -1,0 +1,44 @@
+{
+ "source": {
+  "cad": "robot_cad/assemv2.SLDASM (wheel layout and radius), motor_controller.ino (R = 0.1325), urdf/SLAMurai.xml (lidar)",
+  "note": "v17 values are in cad_profile.v17.json. confirm: footprint radius and blind wedges were NOT measured on assemv2"
+ },
+ "footprint_circumradius_m": 0.175,
+ "footprint_radius_parts_m": {
+  "assumed": 0.175
+ },
+ "footprint_bbox_upper_bound_m": 0.175,
+ "wheel_centre_radius_m": 0.1325,
+ "wheel_centre_radius_spread_mm": 0.0,
+ "wheel_azimuths_deg": [
+  0,
+  90,
+  180,
+  270
+ ],
+ "wheel_diameter_cad_m": 0.06,
+ "scan_plane_height_m": 0.12,
+ "lidar_axis_offset_xy_m": [
+  0.0,
+  0.0
+ ],
+ "lidar_cap_blade_azimuths_deg": [
+  90.0,
+  180.0,
+  270.0
+ ],
+ "lidar_blade_shadow_halfwidth_deg": 0.84,
+ "camera_front_x_m": 0.16,
+ "camera_half_width_m": 0.062,
+ "camera_centre_height_m": 0.1402,
+ "lidar_body_box_mm_sw": [
+  -39.97,
+  152.19,
+  -35.87,
+  61.6,
+  207.69,
+  35.94
+ ],
+ "ground_clearance_m": 0.01,
+ "motor_axis_height_m": 0.03
+}

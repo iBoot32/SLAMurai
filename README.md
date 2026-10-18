@@ -268,6 +268,7 @@ autonav/       Nav2 launch files, parameters, ROS node (original robot code)
 control/       stepper firmware and cmdvel_gui (original robot code, with the robot's controller fixes)
 cortex/        LLM interface
 robot_cad/     SolidWorks CAD, versions, build scripts
+robot_side/    runs on the Jetson: safety gate, Nav2 restart helper, human tools (commission, approve, arm), config. Off unless `safety:=true`
 robotlab/      the API: PC library to connect to the robot, drive trials, score, sweep/compare/optimize (profiles/ = per-robot mapping)
 recipes/       reusable analysis and run scripts the agent calls or copies
 images/        README images

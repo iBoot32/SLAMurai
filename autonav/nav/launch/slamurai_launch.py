@@ -169,18 +169,37 @@ def generate_launch_description():
         output='screen'
     )
 
+    # safety:=false (default) is the stock setup: Nav2 here, main.py on /cmd_vel.
+    # safety:=true: the gate is the only publisher of /cmd_vel_safe, main.py listens there, and Nav2 is started and restarted
+    # by nav2_manager when the PC sends parameters (Dashing reads parameters only at start-up). The gate starts disarmed.
+    def safety_setup(context):
+        if LaunchConfiguration('safety').perform(context).lower() != 'true':
+            return [launch_ros.actions.Node(package='slamurai_nav', node_executable='main.py', node_name='main', output='screen'),
+                    nav2_launch]
+        cfg = os.path.join(slamurai_nav_share_dir, 'autotune_config')
+        gate_args = ['--config', os.path.join(cfg, 'safety_config.yaml'), '--approved', os.path.join(cfg, 'safety_config.approved')]
+        if os.path.exists(os.path.join(cfg, 'zone.npz')):
+            gate_args += ['--zone', os.path.join(cfg, 'zone.npz')]
+        if os.path.exists('/etc/slamurai/operator_token'):
+            gate_args += ['--token-file', '/etc/slamurai/operator_token']
+        return [
+            launch_ros.actions.Node(package='slamurai_nav', node_executable='main.py', node_name='main', output='screen',
+                                    parameters=[{'cmd_topic': '/cmd_vel_safe'}]),
+            launch_ros.actions.Node(package='slamurai_nav', node_executable='safety_gate.py', node_name='safety_gate',
+                                    output='screen', arguments=gate_args),
+            launch_ros.actions.Node(package='slamurai_nav', node_executable='nav2_manager.py', node_name='nav2_manager',
+                                    output='screen', arguments=['--config', os.path.join(cfg, 'safety_config.yaml'),
+                                                                '--map', map_path, '--bt', bt]),
+        ]
+
     return LaunchDescription(
         declare_configurable_parameters(configurable_parameters) + [
             DeclareLaunchArgument('output', default_value='screen', description='Output mode'),
             DeclareLaunchArgument('log_level', default_value='info', description='Logging level'),
+            DeclareLaunchArgument('safety', default_value='false',
+                                  description='true: run the safety gate; main.py then takes /cmd_vel_safe and the PC restarts Nav2'),
             OpaqueFunction(function=launch_setup),
-
-            launch_ros.actions.Node(
-               package='slamurai_nav',
-               node_executable='main.py',
-               node_name='main',
-               output='screen',
-            ),
+            OpaqueFunction(function=safety_setup),
 
             # Robot State Publisher for TFs from URDF
             launch_ros.actions.Node(
@@ -211,7 +230,6 @@ def generate_launch_description():
             #  ),
 
             rplidar_launch,
-            nav2_launch,
             rosbridge_node,
             web_video_node,
         ]
