@@ -504,4 +504,9 @@ class SafetyCore(object):
                 limit = limit or 'rot_block'
         info['min_clear'] = (float(np.hypot(self.P[:, 0], self.P[:, 1]).min()) - self.R) if len(self.P) else float('inf')
         info['t_lat'] = t_lat
+        if len(self.P):                                  # nearest return per 30 deg sector, base frame, 0 = front, counter-clockwise
+            ang = np.degrees(np.arctan2(self.P[:, 1], self.P[:, 0])) % 360.0
+            d = np.hypot(self.P[:, 0], self.P[:, 1])
+            info['sector_m'] = [round(float(d[(ang // 30).astype(int) == k].min()), 2) if ((ang // 30).astype(int) == k).any() else None
+                                for k in range(12)]
         return finish((vx, vy, w), limit)

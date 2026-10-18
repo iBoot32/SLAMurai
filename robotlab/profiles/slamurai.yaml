@@ -41,11 +41,13 @@ status:                                # JSON keys in the safety status message
   armed: armed
   clearance: min_clear                 # nearest obstacle distance, metres
   limit: limit                         # why the safety layer reduced the command
+  sectors: sector_m                    # nearest lidar return in 12 sectors of 30 deg, 0 = front, counter-clockwise
 
 log_patterns:                          # counted in the log stream
   recovery: Attempting
   failure: Navigation failed
 
+map: ../../autonav/nav/maps/f1t.yaml      # the static map Nav2 loads
 nav2_params: ../../autonav/nav/params/nav2_params.yaml
 
 limits_from_params:                    # where the speed/accel limits live in the Nav2 parameters (used by the metrics)

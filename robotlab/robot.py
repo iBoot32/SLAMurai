@@ -185,6 +185,19 @@ class Robot(object):
         return s['faults']
 
     # ---- acting
+    def sectors(self):
+        """Nearest lidar return (m from the robot centre) in 12 sectors of 30 deg, index 0 = 0..30 deg left of straight ahead,
+        counter-clockwise; None = nothing seen. Needs the safety status stream."""
+        s = self.status()
+        return s['raw'].get(self.p['status']['sectors']) if s else None
+
+    def world(self):
+        """The static map from the profile (`map:`), as a World."""
+        if getattr(self, '_world', None) is None:
+            from world import World
+            self._world = World(os.path.join(self.p.get('_dir', '.'), self.p['map']))
+        return self._world
+
     def send_goal(self, x, y, yaw=0.0):
         g, now = self.p['goal'], time.time()
         self.pub['goal'].publish(roslibpy.Message({
