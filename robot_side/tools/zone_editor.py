@@ -54,7 +54,7 @@ class ZoneEditor(Node):
         side = ttk.Frame(self.root, padding=8)
         side.grid(row=0, column=1, sticky='n')
         self.mode, self.tool = tk.StringVar(value='allow'), tk.StringVar(value='brush')
-        self.size, self.clear = tk.DoubleVar(value=0.30), tk.DoubleVar(value=0.30)
+        self.size, self.clear = tk.DoubleVar(value=0.20), tk.DoubleVar(value=0.10)
         self.anyway = tk.BooleanVar(value=False)
         ttk.Label(side, text='Paint').pack(anchor='w')
         for t, v in (('Allowed (green)', 'allow'), ('Keep-out (red)', 'keepout')):

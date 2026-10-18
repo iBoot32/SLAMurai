@@ -5,7 +5,7 @@ from scipy import ndimage
 from safety_core import Zone
 
 
-def compose(free, paint, res, clearance_m=0.30):
+def compose(free, paint, res, clearance_m=0.10):
     """Allowed cells. free: bool map (row 0 = lowest y). paint: 0 none, 1 allow, 2 keep-out (same shape).
     Free cells at least clearance_m from a wall or unknown cell; if anything is painted allow, only that; never keep-out."""
     ok = free & (ndimage.distance_transform_edt(free) * res - 0.5 * res >= clearance_m)
