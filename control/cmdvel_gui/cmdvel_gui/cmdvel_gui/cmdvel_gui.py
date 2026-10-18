@@ -352,7 +352,10 @@ class CmdVelGUI(Node):
         self.cmd = self.command()
         m = Twist()
         m.linear.x, m.linear.y, m.angular.z = self.cmd
-        self.pub.publish(m)
+        # publish only while driving plus a few zeros after release: a steady stream of zeros would fight Nav2 on /cmd_vel
+        self.idle = 0 if any(abs(v) > 1e-3 for v in self.cmd) else getattr(self, 'idle', 5) + 1
+        if self.idle <= 5:
+            self.pub.publish(m)
         self.put(self.speed_lbl, text='%d%% of  %.2f m/s, %.2f rad/s' % (self.speed.get() * 100, self.max_lin, self.max_ang))
         self.put(self.sent, text='You send   fwd %+.2f  left %+.2f  turn %+.2f' % self.cmd)
         fresh = time.monotonic() - self.safe_t < 1.0

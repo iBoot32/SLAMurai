@@ -192,6 +192,8 @@ def generate_launch_description():
                                     parameters=[{'cmd_topic': '/cmd_vel_safe'}]),
             launch_ros.actions.Node(package='slamurai_nav', node_executable='safety_gate.py', node_name='safety_gate',
                                     output='screen', arguments=gate_args),
+            launch_ros.actions.Node(package='slamurai_nav', node_executable='telemetry.py', node_name='robotlab_telemetry',
+                                    output='screen'),
             launch_ros.actions.Node(package='slamurai_nav', node_executable='nav2_manager.py', node_name='nav2_manager',
                                     output='screen', arguments=['--config', os.path.join(cfg, 'safety_config.yaml'),
                                                                 '--map', map_path, '--bt', bt,

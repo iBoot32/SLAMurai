@@ -75,6 +75,13 @@ def drive(robot, goal, limits=None, tol=0.12, timeout=180.0, stall_s=25.0, block
                 still_since = None
         robot.sleep(1.0 / rate_hz)
     stop(robot)
+    S = [x for x in robot.samples_between(t0, time.monotonic()) if x[1] is not None] if hasattr(robot, 'samples_between') else []
+    if len(S) > len(rec['t']):                          # full-rate telemetry: replace the loop's samples, keep its gate fields
+        lt = np.array(rec['t']) if rec['t'] else np.zeros(1)
+        idx = [min(len(rec['clear']) - 1, int(np.searchsorted(lt, x[0] - t0))) for x in S] if rec['clear'] else None
+        rec = {'t': [x[0] - t0 for x in S], 'pose': [x[1] for x in S], 'vel': [x[2] for x in S], 'cmd_in': [x[3] for x in S],
+               'cmd_out': [x[4] for x in S], 'clear': [rec['clear'][i] for i in idx] if idx else [3.0] * len(S),
+               'limit': [rec['limit'][i] for i in idx] if idx else [''] * len(S)}
     cin = np.array(rec['cmd_in']) if rec['cmd_in'] else np.zeros((1, 3))
     lim = dict(limits or {})
     lim.setdefault('v_cmd', max(0.05, float(np.hypot(cin[:, 0], cin[:, 1]).max())))

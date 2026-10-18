@@ -26,7 +26,7 @@
 - `max_session_s` = 7200
 - `heartbeat_timeout_s` = 4.0
 - `scan_stale_s` = 0.5
-- `cmd_stale_s` = 1.5
+- `cmd_stale_s` = 0.4
 - `odom_stale_s` = 0.3
 - `amcl_travel_stale_m` = 0.5
 - `amcl_cov_limit_m` = 0.35
@@ -84,4 +84,4 @@
 - `nav.samples`: trajectory count limited so ~25725 pose evaluations x 2.0 us stay inside 55 % of one control period (55 ms)
 - `nav.amcl_update_min_d`: >= distance travelled per scan at v_max (0.050 m); finer only costs CPU
 
-safety_config lock: `4e078a0860bf78d2`
+safety_config lock: `4e1eae92fb1dafdf`

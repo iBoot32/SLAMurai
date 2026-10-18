@@ -11,7 +11,7 @@ Noting problems for discussion is another.
 - `robotlab/profiles/*.yaml` everything robot-specific: topics, types, frames, how goals are sent, how Nav2 restarts, where the
   safety status comes from, where the Nav2 parameters are. A new robot means a new profile.
 - `recipes/` example experiment scripts the agent copies and edits.
-- `robot_side/` runs on the robot: the safety gate and its core, the Nav2 restart helper, human tools (commission, approve, arm), config.
+- `robot_side/` runs on the robot: the safety gate and its core, the Nav2 restart helper, the telemetry batcher (Dashing's rosbridge passes only ~10 messages/s in total), human tools (commission, approve, arm), config.
   Off unless the robot launches with `safety:=true`. The library only knows it through the profile.
 
 ## Rules

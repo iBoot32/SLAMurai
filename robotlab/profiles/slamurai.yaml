@@ -21,15 +21,10 @@ restart:                               # how Nav2 is restarted with new paramete
   status_type: std_msgs/String
   timeout_s: 240
 
-streams:                               # name: topic and type; the type decides how the message is read
-  odom:    {topic: /odometry/raw,       type: nav_msgs/msg/Odometry, throttle_ms: 40}
-  amcl:    {topic: /amcl_pose,          type: geometry_msgs/msg/PoseWithCovarianceStamped}
-  cmd_in:  {topic: /cmd_vel,            type: geometry_msgs/msg/Twist}
-  cmd_out: {topic: /cmd_vel_safe,       type: geometry_msgs/msg/Twist, throttle_ms: 40}
-  plan:    {topic: /plan,               type: nav_msgs/msg/Path, queue_length: 1}
-  log:     {topic: /rosout,             type: rcl_interfaces/msg/Log}
-  status:  {topic: /safety/status,      type: std_msgs/msg/String}
-  tf:      {topic: /tf,                 type: tf2_msgs/msg/TFMessage}
+telemetry:                             # robot_side/tools/telemetry.py batches pose, velocity, commands, gate status, plan and log.
+  topic: /robotlab/telemetry           # Dashing rosbridge passes ~10 messages/s in total, so separate streams would arrive at ~2 Hz.
+
+streams: {}                            # extra topics read directly through rosbridge (slow: keep to a few low-rate topics)
 
 pose:                                  # map pose = map->odom (localization) composed with odom->base (odometry)
   map_frame: map

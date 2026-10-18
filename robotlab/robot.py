@@ -3,6 +3,7 @@ import json
 import math
 import os
 import re
+import collections
 import threading
 import time
 
@@ -45,6 +46,8 @@ class Robot(object):
         self.restart_status = {}
         self.last_hb = 0.0
         self.lost_since = None
+        self.samples = collections.deque(maxlen=20000)   # telemetry: (t, pose or None, vel, cmd_in, cmd_out), t on time.monotonic()
+        self.offset = None
         host, port = host or self.p['host'], int(port or self.p.get('port', 9090))
         self.ros = roslibpy.Ros(host=host, port=port)
         self.ros.run()
@@ -69,6 +72,10 @@ class Robot(object):
                 t = roslibpy.Topic(self.ros, self.p[key]['topic'], self.p[key]['type'])
                 t.advertise()
                 self.pub[key] = t
+        if 'telemetry' in self.p:
+            t = roslibpy.Topic(self.ros, self.p['telemetry']['topic'], 'std_msgs/String', queue_length=1)
+            t.subscribe(self._on_tm)
+            self.topics.append(t)
         if 'restart' in self.p:
             r = self.p['restart']
             t = roslibpy.Topic(self.ros, r['status_topic'], r.get('status_type', 'std_msgs/String'))
@@ -117,6 +124,38 @@ class Robot(object):
                 self.v[name] = m
             self.rx[name] = now
 
+    def _on_tm(self, m):
+        """One telemetry batch (robot_side/tools/telemetry.py): samples at full rate, delivered a few times a second."""
+        d, now = json.loads(m['data']), time.monotonic()
+        S = d.get('s') or []
+        if not S:
+            return
+        off = now - S[-1][0]
+        with self.lock:
+            self.offset = off if self.offset is None else min(self.offset, off)   # least-delayed batch = best clock offset
+            for r in S:
+                pose = tuple(r[1:4]) if r[1] is not None else None
+                self.samples.append((r[0] + self.offset, pose, tuple(r[4:7]), tuple(r[7:10]), tuple(r[10:13])))
+            last = self.samples[-1]
+            self.v['tm'], self.rx['tm'] = last, now
+            self.v['odom'] = (0.0, 0.0, 0.0) + last[2]
+            self.v['cmd_in'], self.v['cmd_out'] = last[3], last[4]
+            self.rx['odom'] = now
+            self.cmd_t.extend(c + self.offset for c in d.get('cmd_t', []))
+            if d.get('status') is not None:
+                self.v['status'], self.rx['status'] = d['status'], now
+            if d.get('plan') and len(d['plan']) >= 2:
+                self.new_plan = np.array(d['plan'])
+            for txt in d.get('log', []):
+                for k, pat in self.p.get('log_patterns', {}).items():
+                    if re.search(pat, txt):
+                        self.counts[k] = self.counts.get(k, 0) + 1
+
+    def samples_between(self, t0, t1):
+        """Telemetry samples with t0 <= t <= t1 (time.monotonic()), or [] without telemetry."""
+        with self.lock:
+            return [x for x in self.samples if t0 <= x[0] <= t1]
+
     def _on_restart_status(self, m):
         try:
             self.restart_status = json.loads(m['data'])
@@ -127,8 +166,11 @@ class Robot(object):
     def pose(self, max_age=1.5, max_odom_travel=0.5):
         """Robot pose (x, y, yaw) in the map frame, or None. Uses the TF chain if available, else the last localization
         fix advanced by odometry."""
-        pc = self.p.get('pose', {})
         now = time.monotonic()
+        tm = self.v.get('tm')
+        if tm is not None and now - self.rx['tm'] < max_age and tm[1] is not None:
+            return tm[1]
+        pc = self.p.get('pose', {})
         mo = self.tf.get((pc.get('map_frame'), pc.get('odom_frame')))
         ob = next((self.tf[(pc['odom_frame'], b)] for b in pc.get('base_frames', []) if (pc['odom_frame'], b) in self.tf), None)
         if mo and ob and now - mo[3] < 10.0 and now - ob[3] < max_age:
@@ -235,7 +277,7 @@ class Robot(object):
             time.sleep(min(left, 0.05))
 
     def wait_ready(self, timeout=20.0):
-        need = ['odom'] + (['status'] if 'status' in self.p.get('streams', {}) else [])
+        need = ['tm'] if 'telemetry' in self.p else ['odom'] + (['status'] if 'status' in self.p.get('streams', {}) else [])
         t0 = time.monotonic()
         while time.monotonic() - t0 < timeout:
             self.sleep(0.1)

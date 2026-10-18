@@ -5,7 +5,7 @@ a_brake_w_rad_s2: 1.8
 amcl_cov_limit_m: 0.35
 amcl_travel_stale_m: 0.5
 blind_wedge_speed_cap_m_s: 0.15
-cmd_stale_s: 1.5
+cmd_stale_s: 0.4
 dyn_obstacle_speed_m_s: 0.0
 fw_decel_xy_m_s2: 0.55
 gap_needed_at_vmax_m: 0.303
@@ -22,7 +22,7 @@ lidar:
   range_min_m: 0.15
   scan_plane_height_m: 0.12
   self_return_radius_m: 0.1
-lock_sha256: 4e078a0860bf78d2
+lock_sha256: 4e1eae92fb1dafdf
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185
