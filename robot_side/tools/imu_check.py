@@ -41,7 +41,7 @@ def main():
     g = np.array(imu)
     t = g[:, 0] - g[0, 0]
     w, acc = g[:, 1:4], g[:, 4:7]
-    dt = np.diff(t, prepend=t[0])
+    dt = np.concatenate([[0.0], np.diff(t)])
     ax = 'xyz'
     print('imu samples %d, rate %.1f Hz' % (len(t), len(t) / t[-1]))
     if a.mode == 'static':
