@@ -88,11 +88,16 @@ def main():
     ap.add_argument('--map', default='')
     ap.add_argument('--bt', default='')
     ap.add_argument('--package', default='slamurai_nav')
+    ap.add_argument('--autostart', default='', help='Nav2 parameter file to start with at launch (as the stock launch does)')
     a, ros_args = ap.parse_known_args()
     safety = yaml.safe_load(open(a.config))
     rclpy.init(args=ros_args)
     nav2 = Nav2Process(package=a.package, map_yaml=a.map, bt_xml=a.bt)
     node = Manager(safety, nav2)
+    if a.autostart:
+        node.busy = True
+        node.status = {'id': 0, 'state': 'starting', 'msg': ''}
+        threading.Thread(target=node.run_restart, args=(0, yaml.safe_load(open(a.autostart)), None), daemon=True).start()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

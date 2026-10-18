@@ -171,7 +171,8 @@ def generate_launch_description():
 
     # safety:=false (default) is the stock setup: Nav2 here, main.py on /cmd_vel.
     # safety:=true: the gate is the only publisher of /cmd_vel_safe, main.py listens there, and Nav2 is started and restarted
-    # by nav2_manager when the PC sends parameters (Dashing reads parameters only at start-up). The gate starts disarmed.
+    # by nav2_manager: it starts with the stock nav2_params.yaml, and again with new parameters when the PC sends them
+    # (Dashing reads parameters only at start-up). The gate starts disarmed.
     def safety_setup(context):
         if LaunchConfiguration('safety').perform(context).lower() != 'true':
             return [launch_ros.actions.Node(package='slamurai_nav', node_executable='main.py', node_name='main', output='screen'),
@@ -189,7 +190,8 @@ def generate_launch_description():
                                     output='screen', arguments=gate_args),
             launch_ros.actions.Node(package='slamurai_nav', node_executable='nav2_manager.py', node_name='nav2_manager',
                                     output='screen', arguments=['--config', os.path.join(cfg, 'safety_config.yaml'),
-                                                                '--map', map_path, '--bt', bt]),
+                                                                '--map', map_path, '--bt', bt,
+                                                                '--autostart', nav2_params_path]),
         ]
 
     return LaunchDescription(
