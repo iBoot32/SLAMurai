@@ -16,19 +16,13 @@ lidar:
   axis_offset_xy_m:
   - 0.0
   - 0.0
-  blind_wedges_deg:
-  - - 90.0
-    - 2.0
-  - - 180.0
-    - 2.0
-  - - 270.0
-    - 2.0
+  blind_wedges_deg: []
   frame_yaw_rad: 3.14159
   range_max_m: 11.5
   range_min_m: 0.15
   scan_plane_height_m: 0.12
   self_return_radius_m: 0.1
-lock_sha256: 2d25f4dc66eb99e8
+lock_sha256: ceb3bfc5bc543c5c
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185

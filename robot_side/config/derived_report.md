@@ -84,4 +84,4 @@
 - `nav.samples`: trajectory count limited so ~25600 pose evaluations x 2.0 us stay inside 55 % of one control period (55 ms)
 - `nav.amcl_update_min_d`: >= distance travelled per scan at v_max (0.030 m); finer only costs CPU
 
-safety_config lock: `2d25f4dc66eb99e8`
+safety_config lock: `ceb3bfc5bc543c5c`
