@@ -25,6 +25,7 @@ sys.path[:0] = [HERE, os.path.join(HERE, '..', 'safety')]      # installed, both
 from zone_build import compose, zone_from_allowed   # noqa: E402
 
 SAVE = os.path.expanduser('~/.slamurai/zone_live.npz')
+VIEW = os.path.expanduser('~/.slamurai/zone_view')   # view rotation in quarter turns
 SHOW = 760                                          # longest side of the map on screen, pixels
 
 
@@ -39,6 +40,10 @@ class ZoneEditor(Node):
         self.free = self.paint = self.meta = None
         self.pose, self.undo, self.shown, self.pending = None, [], None, None
         self.drag, self.poly, self.last_draw = None, [], 0.0
+        try:
+            self.k = int(open(VIEW).read()) % 4
+        except Exception:
+            self.k = 1                       # 1: map x points up, y left, like RViz's default top-down view
 
         self.root = tk.Tk()
         self.root.title('Safety zone')
@@ -61,7 +66,7 @@ class ZoneEditor(Node):
         tk.Scale(side, variable=self.clear, from_=0.2, to=0.8, resolution=0.05, orient='horizontal', length=170,
                  command=lambda _: self.changed()).pack(anchor='w')
         ttk.Checkbutton(side, text='Apply even if the robot is outside', variable=self.anyway).pack(anchor='w', pady=(8, 0))
-        for t, f in (('Undo', self.do_undo), ('Clear paint', self.clear_paint), ('No zone (whole map)', self.no_zone)):
+        for t, f in (('Rotate view', self.rotate), ('Undo', self.do_undo), ('Clear paint', self.clear_paint), ('No zone (whole map)', self.no_zone)):
             ttk.Button(side, text=t, command=f).pack(anchor='w', fill='x', pady=2)
         self.info = tk.Label(side, text='waiting for /map ...', justify='left', wraplength=190, anchor='w')
         self.info.pack(anchor='w', pady=8)
@@ -112,14 +117,36 @@ class ZoneEditor(Node):
         self.show_robot()
         self.root.after(50, self.tick)
 
-    # ---- geometry
-    def cell(self, e):
+    # ---- geometry. Upright = x right, y up (the stored grid). The screen shows it turned k quarter turns CCW.
+    def dims(self):
+        return int(self.meta[0] * self.s), int(self.meta[1] * self.s)
+
+    def up(self, x, y):
+        Wu, Hu = self.dims()
+        return [(x, y), (Wu - y, x), (Wu - x, Hu - y), (y, Hu - x)][self.k]
+
+    def down(self, x, y):
+        Wu, Hu = self.dims()
+        return [(x, y), (y, Wu - x), (Wu - x, Hu - y), (Hu - y, x)][self.k]
+
+    def cell(self, x, y):
         w, h = self.meta[0], self.meta[1]
-        return min(max(int(e.x / self.s), 0), w - 1), min(max(int(h - 1 - e.y / self.s), 0), h - 1)
+        ux, uy = self.up(x, y)
+        return min(max(int(ux / self.s), 0), w - 1), min(max(int(h - 1 - uy / self.s), 0), h - 1)
 
     def to_px(self, x, y):
         w, h, res, ox, oy = self.meta
-        return (x - ox) / res * self.s, (h - (y - oy) / res) * self.s
+        return self.down((x - ox) / res * self.s, (h - (y - oy) / res) * self.s)
+
+    def rotate(self):
+        self.k = (self.k + 1) % 4
+        try:
+            os.makedirs(os.path.dirname(VIEW), exist_ok=True)
+            open(VIEW, 'w').write(str(self.k))
+        except Exception:
+            pass
+        self.cancel_poly()
+        self.draw()
 
     # ---- painting
     def value(self):
@@ -139,7 +166,7 @@ class ZoneEditor(Node):
     def press(self, e):
         if self.paint is None:
             return
-        j, i = self.cell(e)
+        j, i = self.cell(e.x, e.y)
         t = self.tool.get()
         if t in ('brush', 'erase'):
             self.push_undo()
@@ -156,7 +183,7 @@ class ZoneEditor(Node):
 
     def motion(self, e):
         if self.drag == 'brush':
-            self.disc(*self.cell(e))
+            self.disc(*self.cell(e.x, e.y))
             if time.monotonic() - self.last_draw > 0.25:
                 self.draw()
         elif self.drag:
@@ -171,7 +198,7 @@ class ZoneEditor(Node):
             self.canvas.delete(self.rect_id)
             self.drag = None
             self.push_undo()
-            (j0, i0), (j1, i1) = self.cell(type('E', (), {'x': x0, 'y': y0})), self.cell(e)
+            (j0, i0), (j1, i1) = self.cell(x0, y0), self.cell(e.x, e.y)
             self.paint[min(i0, i1):max(i0, i1) + 1, min(j0, j1):max(j0, j1) + 1] = self.value()
             self.changed()
 
@@ -180,7 +207,7 @@ class ZoneEditor(Node):
             self.push_undo()
             h, w = self.paint.shape
             im = Image.new('L', (w, h), 0)
-            ImageDraw.Draw(im).polygon([(x / self.s, y / self.s) for x, y in self.poly], fill=1)
+            ImageDraw.Draw(im).polygon([tuple(v / self.s for v in self.up(x, y)) for x, y in self.poly], fill=1)
             m = np.array(im)[::-1].astype(bool)                   # screen rows go down, map rows go up
             self.paint[m] = self.value()
             self.changed()
@@ -256,7 +283,10 @@ class ZoneEditor(Node):
                              (self.paint == 2, (220, 20, 20), 0.55)):
             img[mask] = img[mask] * (1 - a) + np.array(col, np.float32) * a
         w, h = self.meta[0], self.meta[1]
-        im = Image.fromarray(img.astype(np.uint8)[::-1], 'RGB').resize((int(w * self.s), int(h * self.s)))
+        Wu, Hu = self.dims()
+        arr = np.ascontiguousarray(np.rot90(img.astype(np.uint8)[::-1], self.k))
+        im = Image.fromarray(arr, 'RGB').resize((Hu, Wu) if self.k % 2 else (Wu, Hu))
+        self.canvas.config(width=im.size[0], height=im.size[1])
         self.photo = tk.PhotoImage(data=b'P6 %d %d 255\n' % im.size + im.tobytes())
         self.canvas.delete('map')
         self.canvas.create_image(0, 0, image=self.photo, anchor='nw', tags='map')
