@@ -131,7 +131,7 @@ class Robot(object):
         now = time.monotonic()
         mo = self.tf.get((pc.get('map_frame'), pc.get('odom_frame')))
         ob = next((self.tf[(pc['odom_frame'], b)] for b in pc.get('base_frames', []) if (pc['odom_frame'], b) in self.tf), None)
-        if mo and ob and now - mo[3] < max_age and now - ob[3] < max_age:
+        if mo and ob and now - mo[3] < 10.0 and now - ob[3] < max_age:
             c, s = math.cos(mo[2]), math.sin(mo[2])
             return (mo[0] + c * ob[0] - s * ob[1], mo[1] + s * ob[0] + c * ob[1], wrap(mo[2] + ob[2]))
         with self.lock:
