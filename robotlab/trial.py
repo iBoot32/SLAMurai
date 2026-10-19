@@ -74,7 +74,8 @@ def drive(robot, goal, limits=None, tol=0.12, timeout=180.0, stall_s=25.0, block
             else:
                 still_since = None
         robot.sleep(1.0 / rate_hz)
-    stop(robot)
+    if end != 'reached':                                # a reached goal is already finished; replacing a live goal can crash Dashing's dwb_controller
+        stop(robot)
     S = [x for x in robot.samples_between(t0, time.monotonic()) if x[1] is not None] if hasattr(robot, 'samples_between') else []
     if len(S) > len(rec['t']):                          # full-rate telemetry: replace the loop's samples, keep its gate fields
         lt = np.array(rec['t']) if rec['t'] else np.zeros(1)
