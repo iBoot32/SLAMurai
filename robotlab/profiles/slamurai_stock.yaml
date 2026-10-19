@@ -27,7 +27,7 @@ log_patterns:                          # counted in the log stream
   recovery: Attempting
   failure: Navigation failed
 
-map: ../../autonav/nav/maps/f1t.yaml      # the static map Nav2 loads
+map: ../../autonav/nav/maps/scan_20261018.yaml      # the static map Nav2 loads
 nav2_params: ../../autonav/nav/params/nav2_params.yaml
 
 limits_from_params:                    # where the speed/accel limits live in the Nav2 parameters (used by the metrics)
