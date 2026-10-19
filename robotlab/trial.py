@@ -92,9 +92,9 @@ def drive(robot, goal, limits=None, tol=0.12, timeout=180.0, stall_s=25.0, block
     return out
 
 
-def run_route(robot, poses, **kw):
+def run_route(robot, poses, gap_s=5.0, **kw):
     """Go to poses[0] (not recorded), then drive pose to pose. Returns one trial per leg.
-    A pose is (x, y) or (x, y, yaw); a missing yaw points along the leg."""
+    A pose is (x, y) or (x, y, yaw); a missing yaw points along the leg. gap_s: pause between legs, because Nav2 drops a goal that arrives right after it finished one."""
     P = []
     for k, p in enumerate(poses):
         if len(p) >= 3:
@@ -107,6 +107,7 @@ def run_route(robot, poses, **kw):
         return []
     out = []
     for g in P[1:]:
+        robot.sleep(gap_s)
         tr = drive(robot, g, **kw)
         out.append(tr)
         if tr['events']['end_reason'] == 'fault':
