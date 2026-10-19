@@ -6,7 +6,7 @@ port: 9090
 
 goal:                                  # how a navigation goal is sent (map frame)
   topic: /move_base_simple/goal
-  type: geometry_msgs/PoseStamped
+  type: geometry_msgs/msg/PoseStamped
   frame: map
 
 streams:                               # name: topic and type; the type decides how the message is read

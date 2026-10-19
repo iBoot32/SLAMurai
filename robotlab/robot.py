@@ -75,12 +75,12 @@ class Robot(object):
                 t.advertise()
                 self.pub[key] = t
         if 'telemetry' in self.p:
-            t = roslibpy.Topic(self.ros, self.p['telemetry']['topic'], 'std_msgs/String', queue_length=1)
+            t = roslibpy.Topic(self.ros, self.p['telemetry']['topic'], 'std_msgs/msg/String', queue_length=1)
             t.subscribe(self._on_tm)
             self.topics.append(t)
         if 'restart' in self.p:
             r = self.p['restart']
-            t = roslibpy.Topic(self.ros, r['status_topic'], r.get('status_type', 'std_msgs/String'))
+            t = roslibpy.Topic(self.ros, r['status_topic'], r.get('status_type', 'std_msgs/msg/String'))
             t.subscribe(self._on_restart_status)
             self.topics.append(t)
         atexit.register(self.close)
