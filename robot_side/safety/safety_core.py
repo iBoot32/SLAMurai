@@ -309,7 +309,7 @@ class SafetyCore(object):
         return float((d < half).sum()) / beams_in
 
     def _tether_gap(self, u):
-        if self.tether_origin is None or self.odom is None:
+        if self.tether_origin is None or self.odom is None or self.c['tether_radius_m'] <= 0:     # radius 0 = no tether
             return float('inf')
         px, py = self.odom[0] - self.tether_origin[0], self.odom[1] - self.tether_origin[1]
         Rt = float(self.c['tether_radius_m'])
@@ -410,7 +410,7 @@ class SafetyCore(object):
 
         # ---- tether hard limit
         px, py = self.odom[0] - self.tether_origin[0], self.odom[1] - self.tether_origin[1]
-        if math.hypot(px, py) > c['tether_radius_m'] + c['tether_hard_extra_m']:
+        if c['tether_radius_m'] > 0 and math.hypot(px, py) > c['tether_radius_m'] + c['tether_hard_extra_m']:
             self._fault(now, 'TETHER', 'odometry %.2f m from the arming point' % math.hypot(px, py))
             info['state'] = 'FAULT'
             return finish(zero, 'fault')

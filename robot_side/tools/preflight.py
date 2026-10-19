@@ -90,7 +90,7 @@ def main():
     check('accel limit <= firmware accel', cfg['a_acc_m_s2'] <= prof['robot']['fw_accel_xy'] + 1e-9)
     need = cfg['gap_needed_at_vmax_m']
     check('full speed needs a gap shorter than the lidar range', need < cfg['lidar']['range_max_m'] / 2, '%.2f m' % need)
-    check('tether radius fits inside the session', cfg['tether_radius_m'] > 0.5)
+    check('tether radius fits inside the session', cfg['tether_radius_m'] == 0 or cfg['tether_radius_m'] > 0.5)
 
     # 3. firmware constants equal the config
     fw = os.path.join(REPO, 'control', 'motor_controller_xdrive_safe', 'motor_controller_xdrive_safe.ino')
@@ -143,7 +143,7 @@ def main():
         ys = z['origin_y'] + (ii + .5) * z['resolution']
         seed = z['seed']
         far = float(np.hypot(xs - seed[0], ys - seed[1]).max())
-        check('tether radius encloses the whole zone from the seed point', cfg['tether_radius_m'] >= far + 0.3,
+        check('tether radius encloses the whole zone from the seed point', cfg['tether_radius_m'] == 0 or cfg['tether_radius_m'] >= far + 0.3,
               'tether %.1f m, farthest zone point %.1f m' % (cfg['tether_radius_m'], far))
     width = max(len(r[0]) for r in results)
     fails = 0

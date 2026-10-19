@@ -43,7 +43,7 @@ policy:                           # human decisions; changing these changes the 
   brake_decel_fraction: 0.9       # the gate assumes it gets this fraction of the firmware decel
   unknown_creep_m_s: 0.05
   blind_wedge_speed_cap_m_s: 0.15
-  tether_radius_m: 3.0            # max distance from the arming point (odometry frame) before a hard stop
+  tether_radius_m: 0              # 0 = no tether. >0: max distance from the arming point (odometry frame) before a hard stop
   tether_hard_extra_m: 0.10
   max_session_s: 7200
   heartbeat_timeout_s: 4.0

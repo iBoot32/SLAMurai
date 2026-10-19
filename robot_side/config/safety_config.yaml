@@ -22,7 +22,7 @@ lidar:
   range_min_m: 0.15
   scan_plane_height_m: 0.12
   self_return_radius_m: 0.1
-lock_sha256: 4e1eae92fb1dafdf
+lock_sha256: 17fd9f84f3c2ac53
 max_session_s: 7200
 odom_stale_s: 0.3
 robot_radius_m: 0.185
@@ -31,7 +31,7 @@ scan_time_s: 0.2
 stop_distance_at_vmax_m: 0.2532
 stop_margin_m: 0.05
 tether_hard_extra_m: 0.1
-tether_radius_m: 3.0
+tether_radius_m: 0
 unknown_creep_m_s: 0.05
 v_max_m_s: 0.35
 w_max_rad_s: 0.75

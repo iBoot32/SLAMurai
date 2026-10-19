@@ -21,7 +21,7 @@
 - `wheel_cap_eff_m_s` = 0.5715
 - `unknown_creep_m_s` = 0.05
 - `blind_wedge_speed_cap_m_s` = 0.15
-- `tether_radius_m` = 3.0
+- `tether_radius_m` = 0
 - `tether_hard_extra_m` = 0.1
 - `max_session_s` = 7200
 - `heartbeat_timeout_s` = 4.0
@@ -84,4 +84,4 @@
 - `nav.samples`: trajectory count limited so ~25725 pose evaluations x 2.0 us stay inside 55 % of one control period (55 ms)
 - `nav.amcl_update_min_d`: >= distance travelled per scan at v_max (0.050 m); finer only costs CPU
 
-safety_config lock: `4e1eae92fb1dafdf`
+safety_config lock: `17fd9f84f3c2ac53`

@@ -30,8 +30,8 @@ def main():
         cfg['v_max_m_s'], cfg['w_max_rad_s'], cfg['wheel_cap_eff_m_s']))
     print('  assumed braking         %.3f m/s^2, fixed latency %.2f s, scan time %.2f s' % (
         cfg['a_brake_m_s2'], cfg['latency_fixed_s'], cfg['scan_time_s']))
-    print('  tether from arm point   %.1f m (hard stop +%.2f m), session max %d s' % (
-        cfg['tether_radius_m'], cfg['tether_hard_extra_m'], cfg['max_session_s']))
+    print('  tether from arm point   %s, session max %d s' % (
+        'none' if cfg['tether_radius_m'] <= 0 else '%.1f m (hard stop +%.2f m)' % (cfg['tether_radius_m'], cfg['tether_hard_extra_m']), cfg['max_session_s']))
     print('  lidar yaw in base frame %.4f rad  (MUST have been checked with commission.py)' % cfg['lidar']['frame_yaw_rad'])
     if '--yes' not in sys.argv:
         if input('Type APPROVE to accept these limits: ').strip() != 'APPROVE':
