@@ -108,8 +108,7 @@ class ZoneEditor(Node):
             pass
         self.s = SHOW / float(max(w, h))
         self.draw()
-        if self.paint.any():
-            self.changed()
+        self.changed()
 
     def on_pose(self, m):
         self.pose = (m.pose.pose.position.x, m.pose.pose.position.y)
