@@ -3,6 +3,7 @@ import json
 import math
 import os
 import re
+import atexit
 import collections
 import threading
 import time
@@ -48,6 +49,7 @@ class Robot(object):
         self.lost_since = None
         self.samples = collections.deque(maxlen=20000)   # telemetry: (t, pose or None, vel, cmd_in, cmd_out), t on time.monotonic()
         self.offset = None
+        self.closed = False
         host, port = host or self.p['host'], int(port or self.p.get('port', 9090))
         self.ros = roslibpy.Ros(host=host, port=port)
         self.ros.run()
@@ -81,6 +83,7 @@ class Robot(object):
             t = roslibpy.Topic(self.ros, r['status_topic'], r.get('status_type', 'std_msgs/String'))
             t.subscribe(self._on_restart_status)
             self.topics.append(t)
+        atexit.register(self.close)
 
     # ---- incoming messages (roslibpy thread)
     def _on(self, name, ty, m):
@@ -306,6 +309,21 @@ class Robot(object):
         raise RuntimeError('Nav2 did not become active in time: %s' % self.restart_status)
 
     def close(self):
+        """Unsubscribe and unadvertise first, so rosbridge drops this client's topics before the socket closes."""
+        if self.closed:
+            return
+        self.closed = True
+        for t in self.topics:
+            try:
+                t.unsubscribe()
+            except Exception:
+                pass
+        for t in self.pub.values():
+            try:
+                t.unadvertise()
+            except Exception:
+                pass
+        time.sleep(0.3)
         try:
             self.ros.terminate()
         except Exception:
