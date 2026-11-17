@@ -255,6 +255,64 @@ This ensures reliable stepper performance without missing steps during complex m
 
 ---
 
+---
+
+# Cortex: Vision-Language Reasoning & Dual-Stream Memory
+
+The cortex (`cortex/`) gives SLAMurai a semantic, time-aware memory of the spaces it drives through, and lets a user ask it questions or send it somewhere by name ("go to where you last saw the dog"). It runs a local vision-language model through Ollama, connected to the robot over rosbridge, so no cloud inference is needed.
+
+## Model
+
+- Custom Ollama model `SLAMurai` (`SLAMurai.mf`), built on **Qwen 3.5 9B** with temperature 0.1
+- System prompt: the current camera frame is *the current state*, and memory is *historical evidence*, which keeps stale memories from overriding what the robot currently sees
+
+## Architecture
+
+```
+ RealSense RGB ─────┐
+ /map + /amcl_pose ─┼─► composite frame (camera | map with pose marker) ──┐
+ Nav2 /rosout logs ─┘                                                     │
+                                                                          ▼
+                       ┌───────────── THINK loop (every ~2 s) ─────────────┐
+                       │  VLM ► structured observation                     │
+                       │  "[time] Pose [x,y,yaw] | Objects: a(x,y,yaw)...  │
+                       │   | Scene: <room type>"                           │
+                       └──────────────┬────────────────────────────────────┘
+                                      ▼
+                     Short-Term Memory (last 8 observations)
+                                      │  every 8 observations
+                                      ▼  VLM distills ►
+                     Long-Term Memory (15 "Key Object Area Index" entries)
+                     "[time window] | Key: objects (x,y,yaw) | Env: rooms (x,y,yaw)"
+                                      │
+ User query ─► CHAT: frame + pose + STM + LTM + Nav2 logs ─► answer
+                                      │   (+ NAV_GOAL: navigate(x, y, yaw))
+                                      ▼
+                     parsed ► PoseStamped ► Nav2 goal (/move_base_simple/goal)
+```
+
+## How it works
+
+1. **Perception input.** `slamurai_interface.py` streams the RealSense color image, the occupancy map, the AMCL pose, and Nav2's planner/controller/behavior-tree logs. The camera frame and a map view with the robot's pose and heading are stitched into one image, so the VLM sees what is in front of the robot and where it is in the map at the same time.
+2. **Observe (`think`).** About every 2 seconds the VLM writes a structured observation with the time, robot pose, the objects it sees with estimated poses, and a guess of the room type.
+3. **Short-term memory.** The 8 most recent observations are kept verbatim.
+4. **Long-term memory.** Every 8 observations, the VLM distills short-term memory into one *Key Object Area Index* entry. Each entry keeps the time window, the key objects with their poses, and the room types with the poses where they were seen, and drops transient objects. Up to 15 entries are kept.
+5. **Chat and navigate.** A user query is answered with the current frame, pose, map bounds, Nav2 logs, and both memory streams. If the user asks to go somewhere, the VLM looks up its coordinates in memory and appends `NAV_GOAL: navigate(x, y, yaw)`. This is parsed and sent to Nav2 as a goal in the `map` frame. Each chat exchange is also written back into short-term memory.
+
+A terminal "cognitive monitor" shows the latest observation, the short-term log, the long-term archive, and generation time while it runs.
+
+## Current limitations
+
+- **Memory is discrete text.** The robot only remembers what the VLM happens to write down, and detail is lost each time short-term memory is distilled into long-term memory.
+- **Fixed capacity.** Long-term memory holds 15 entries, and the oldest is dropped first, so long deployments forget early areas.
+- **Coordinates come from the VLM.** Object poses are estimated by the VLM from the image and the pose overlay, not measured geometrically.
+
+**Next step:** replace text memory with continuous embeddings stored per location and merged over each area, so observations from different places and times build into one semantic representation of the space instead of being diluted.
+
+## Demo
+
+SLAMurai was presented live at **ClawCon Michigan (April 2026)**: [talk recording](PASTE_TIMESTAMPED_LINK).
+
 # License
 
 MIT License
